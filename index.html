@@ -322,12 +322,10 @@
     <div class="container">
         <div class="header">
             <img src="logo.png" alt="Company Logo" style="height: 100px; margin-bottom: 10px;">
-            <h1>Rectangle Nesting Optimizer</h1>
         </div>
         
         <div class="content">
             <div class="preset-section">
-                <h3>Test Dimensions:</h3>
                 <div class="preset-buttons">
                     <button class="preset-button" onclick="loadPreset(2000, 1400, 360, 325)">
                         Paper: 2000×1400 | Rect: 360×325
@@ -387,6 +385,12 @@
                 </div>
             </div>
             
+            <div class="diagrams-section">
+                <div class="diagram-container" id="diagramContainer">
+                    <!-- Diagrams will be populated by JavaScript -->
+                </div>
+            </div>
+            
             <div class="legend">
                 <div class="legend-item">
                     <div class="legend-color" style="background: white; border: 2px solid black;"></div>
@@ -406,12 +410,7 @@
                 </div>
             </div>
             
-            <div class="diagrams-section">
-                <h2>Cutting Layouts with Waste Reduction</h2>
-                <div class="diagram-container" id="diagramContainer">
-                    <!-- Diagrams will be populated by JavaScript -->
-                </div>
-            </div>
+            
 
             <div class="results-section" id="resultsSection">
                 <!-- Results will be populated by JavaScript -->
