@@ -760,6 +760,73 @@
                 const labelY = offsetY + (usedHeight + bottomWasteUsed + remainingBottomWaste/2) * scale;
                 ctx.fillText(`${paperWidth.toFixed(0)}×${remainingBottomWaste.toFixed(0)}`, labelX, labelY);
             }
+
+            // Add dimension labels
+            ctx.fillStyle = 'blue';
+            ctx.font = '9px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Paper dimensions
+            // Width dimension (top edge)
+            const paperWidthLabelX = offsetX + paperW / 2;
+            const paperWidthLabelY = offsetY - 15;
+            ctx.fillText(`${paperWidth.toFixed(0)}mm`, paperWidthLabelX, paperWidthLabelY);
+
+            // Height dimension (left edge)
+            ctx.save();
+            ctx.translate(offsetX - 15, offsetY + paperH / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText(`${paperHeight.toFixed(0)}mm`, 0, 0);
+            ctx.restore();
+
+            // First rectangle dimensions (if rectangles exist)
+            if (placement.rows > 0 && placement.cols > 0) {
+                const firstRectW = rectW;
+                const firstRectH = rectH;
+                
+                // First rectangle width (bottom edge of first rectangle)
+                const rectWidthLabelX = offsetX + firstRectW / 2;
+                const rectWidthLabelY = offsetY + firstRectH + 15;
+                ctx.fillStyle = 'red';
+                ctx.fillText(`${placement.rectW.toFixed(1)}`, rectWidthLabelX, rectWidthLabelY);
+                
+                // First rectangle height (right edge of first rectangle)
+                ctx.save();
+                ctx.translate(offsetX + firstRectW + 15, offsetY + firstRectH / 2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.fillText(`${placement.rectH.toFixed(1)}`, 0, 0);
+                ctx.restore();
+            }
+
+            // Waste-reducing rectangles dimensions
+            placement.wasteRects.forEach((wasteRect, index) => {
+                if (wasteRect.total > 0) {
+                    const wasteRectW = wasteRect.rectW * scale;
+                    const wasteRectH = wasteRect.rectH * scale;
+                    const startX = offsetX + wasteRect.x * scale;
+                    const startY = offsetY + wasteRect.y * scale;
+                    
+                    // Set color based on rectangle type
+                    if (wasteRect.type === 'waste-reduction') {
+                        ctx.fillStyle = 'black';
+                    } else {
+                        ctx.fillStyle = 'black';
+                    }
+                    
+                    // Width dimension (bottom edge of first waste rectangle)
+                    const wasteWidthLabelX = startX + wasteRectW / 2;
+                    const wasteWidthLabelY = startY + wasteRectH + 15;
+                    ctx.fillText(`${wasteRect.rectW.toFixed(1)}`, wasteWidthLabelX, wasteWidthLabelY);
+                    
+                    // Height dimension (right edge of first waste rectangle)
+                    ctx.save();
+                    ctx.translate(startX + wasteRectW + 15, startY + wasteRectH / 2);
+                    ctx.rotate(-Math.PI / 2);
+                    ctx.fillText(`${wasteRect.rectH.toFixed(1)}`, 0, 0);
+                    ctx.restore();
+                }
+            });
         }
 
         function updateResults() {
