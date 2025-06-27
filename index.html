@@ -376,8 +376,12 @@
                             ✓ Height Tolerance (±5mm)
                         </button>
                         <div class="form-group">
-                            <label for="toleranceValue">Tolerance Value (mm)</label>
-                            <input type="number" id="toleranceValue" value="5" step="0.5" min="0" max="50">
+                            <label for="widthToleranceValue">Width Tolerance (mm)</label>
+                            <input type="number" id="widthToleranceValue" value="5" step="0.5" min="0" max="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="heightToleranceValue">Height Tolerance (mm)</label>
+                            <input type="number" id="heightToleranceValue" value="5" step="0.5" min="0" max="50">
                         </div>
                     </div>
                 </div>
@@ -427,12 +431,12 @@
             if (type === 'width') {
                 widthTolerance = !widthTolerance;
                 const btn = document.getElementById('widthToleranceBtn');
-                btn.textContent = widthTolerance ? '✓ Width Tolerance (±5mm)' : '✗ Width Tolerance (±5mm)';
+                btn.textContent = widthTolerance ? '✓ Width Tolerance' : '✗ Width Tolerance';
                 btn.className = widthTolerance ? 'toggle-button' : 'toggle-button disabled';
             } else {
                 heightTolerance = !heightTolerance;
                 const btn = document.getElementById('heightToleranceBtn');
-                btn.textContent = heightTolerance ? '✓ Height Tolerance (±5mm)' : '✗ Height Tolerance (±5mm)';
+                btn.textContent = heightTolerance ? '✓ Height Tolerance' : '✗ Height Tolerance';
                 btn.className = heightTolerance ? 'toggle-button' : 'toggle-button disabled';
             }
             updateResults();
@@ -447,7 +451,8 @@
         }
 
         function calculateWasteReduction(paperWidth, paperHeight, mainLayout, rectWidth, rectHeight) {
-            const tolerance = parseFloat(document.getElementById('toleranceValue').value);
+            const widthToleranceValue = parseFloat(document.getElementById('widthToleranceValue').value);
+            const heightToleranceValue = parseFloat(document.getElementById('heightToleranceValue').value);
             const wasteRects = [];
             
             // Calculate waste areas
@@ -493,8 +498,8 @@
                 
                 // Try with tolerance
                 if (widthTolerance || heightTolerance) {
-                    const toleranceW = widthTolerance ? rectWidth - tolerance : rectWidth;
-                    const toleranceH = heightTolerance ? rectHeight - tolerance : rectHeight;
+                    const toleranceW = widthTolerance ? rectWidth - widthToleranceValue : rectWidth;
+                    const toleranceH = heightTolerance ? rectHeight - heightToleranceValue : rectHeight;
                     
                     const tolCols = Math.floor(rightWaste / toleranceW);
                     const tolRows = Math.floor(paperHeight / toleranceH);
@@ -554,8 +559,8 @@
                 
                 // Try with tolerance
                 if (widthTolerance || heightTolerance) {
-                    const toleranceW = widthTolerance ? rectWidth - tolerance : rectWidth;
-                    const toleranceH = heightTolerance ? rectHeight - tolerance : rectHeight;
+                    const toleranceW = widthTolerance ? rectWidth - widthToleranceValue : rectWidth;
+                    const toleranceH = heightTolerance ? rectHeight - heightToleranceValue : rectHeight;
                     
                     const tolCols = Math.floor(availableWidth / toleranceW);
                     const tolRows = Math.floor(bottomWaste / toleranceH);
@@ -865,7 +870,7 @@
 
         // Add event listeners
         document.addEventListener('DOMContentLoaded', function() {
-            const inputs = ['paperWidth', 'paperHeight', 'rectWidth', 'rectHeight', 'toleranceValue'];
+            const inputs = ['paperWidth', 'paperHeight', 'rectWidth', 'rectHeight', 'widthToleranceValue', 'heightToleranceValue'];
             inputs.forEach(id => {
                 document.getElementById(id).addEventListener('input', updateResults);
             });
