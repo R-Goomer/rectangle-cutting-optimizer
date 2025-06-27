@@ -329,8 +329,8 @@
             <div class="preset-section">
                 <h3>Test Dimensions:</h3>
                 <div class="preset-buttons">
-                    <button class="preset-button" onclick="loadPreset(2000, 1400, 250, 200)">
-                        Paper: 2000×1400 | Rect: 250×200
+                    <button class="preset-button" onclick="loadPreset(2000, 1400, 360, 325)">
+                        Paper: 2000×1400 | Rect: 360×325
                     </button>
                     <button class="preset-button" onclick="loadPreset(1800, 1200, 360, 325)">
                         Paper: 1800×1200 | Rect: 360×325
@@ -406,6 +406,13 @@
                 </div>
             </div>
             
+            <div class="diagrams-section">
+                <h2>Cutting Layouts with Waste Reduction</h2>
+                <div class="diagram-container" id="diagramContainer">
+                    <!-- Diagrams will be populated by JavaScript -->
+                </div>
+            </div>
+
             <div class="results-section" id="resultsSection">
                 <!-- Results will be populated by JavaScript -->
             </div>
@@ -413,13 +420,7 @@
             <div id="recommendationSection">
                 <!-- Recommendation will be populated by JavaScript -->
             </div>
-            
-            <div class="diagrams-section">
-                <h2>Cutting Layouts with Waste Reduction</h2>
-                <div class="diagram-container" id="diagramContainer">
-                    <!-- Diagrams will be populated by JavaScript -->
-                </div>
-            </div>
+
         </div>
     </div>
 
@@ -854,21 +855,6 @@
             // Update results section
             const resultsHTML = `
                 <div class="metric-card">
-                    <h4>Orientation 1</h4>
-                    <div class="value">${placements.orientation1.totalWithWaste}</div>
-                    <div class="subtext">${placements.orientation1.total} main + ${placements.orientation1.wasteTotal} waste-reduced</div>
-                </div>
-                <div class="metric-card">
-                    <h4>Orientation 2</h4>
-                    <div class="value">${placements.orientation2.totalWithWaste}</div>
-                    <div class="subtext">${placements.orientation2.total} main + ${placements.orientation2.wasteTotal} waste-reduced</div>
-                </div>
-                <div class="metric-card best-option">
-                    <h4>Best Total</h4>
-                    <div class="value">${bestPlacement.totalWithWaste}</div>
-                    <div class="subtext">Orientation ${bestOrientation}</div>
-                </div>
-                <div class="metric-card">
                     <h4>Material Efficiency</h4>
                     <div class="value">${efficiency}%</div>
                     <div class="subtext">Total area utilization</div>
@@ -878,26 +864,26 @@
             document.getElementById('resultsSection').innerHTML = resultsHTML;
             
             // Add recommendation section
-            const totalDifference = Math.abs(placements.orientation1.totalWithWaste - placements.orientation2.totalWithWaste);
-            const mainDifference = Math.abs(placements.orientation1.total - placements.orientation2.total);
-            const wasteDifference = Math.abs(placements.orientation1.wasteTotal - placements.orientation2.wasteTotal);
+            // const totalDifference = Math.abs(placements.orientation1.totalWithWaste - placements.orientation2.totalWithWaste);
+            // const mainDifference = Math.abs(placements.orientation1.total - placements.orientation2.total);
+            // const wasteDifference = Math.abs(placements.orientation1.wasteTotal - placements.orientation2.wasteTotal);
             
-            let recommendationText = '';
+            // let recommendationText = '';
             
-            if (totalDifference === 0) {
-                recommendationText = `Both orientations yield the same total result (${bestPlacement.totalWithWaste} rectangles). Choose based on your preference or cutting convenience. Material efficiency: ${efficiency}%.`;
-            } else {
-                recommendationText = `Use Orientation ${bestOrientation} for optimal results. Total: ${bestPlacement.totalWithWaste} rectangles (${bestPlacement.total} main + ${bestPlacement.wasteTotal} waste-reduced). This gives you ${totalDifference} more rectangles than the other orientation with ${efficiency}% material efficiency.`;
-            }
+            // if (totalDifference === 0) {
+            //     recommendationText = `Both orientations yield the same total result (${bestPlacement.totalWithWaste} rectangles). Choose based on your preference or cutting convenience. Material efficiency: ${efficiency}%.`;
+            // } else {
+            //     recommendationText = `Use Orientation ${bestOrientation} for optimal results. Total: ${bestPlacement.totalWithWaste} rectangles (${bestPlacement.total} main + ${bestPlacement.wasteTotal} waste-reduced). This gives you ${totalDifference} more rectangles than the other orientation with ${efficiency}% material efficiency.`;
+            // }
             
-            const recommendationHTML = `
-                <div class="recommendation">
-                    <h3>Recommendation</h3>
-                    <p>${recommendationText}</p>
-                </div>
-            `;
+            // const recommendationHTML = `
+            //     <div class="recommendation">
+            //         <h3>Recommendation</h3>
+            //         <p>${recommendationText}</p>
+            //     </div>
+            // `;
             
-            document.getElementById('recommendationSection').innerHTML = recommendationHTML;
+            // document.getElementById('recommendationSection').innerHTML = recommendationHTML;
             
             // Update diagrams
             const diagramsHTML = `
