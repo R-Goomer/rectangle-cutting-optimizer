@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rectangle Cutting Optimizer</title>
+    <title>Enhanced Rectangle Cutting Optimizer</title>
     <style>
         * {
             margin: 0;
@@ -51,7 +51,7 @@
 
         .input-section {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 30px;
             margin-bottom: 30px;
         }
@@ -95,9 +95,76 @@
             box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
         }
 
+        .tolerance-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .toggle-button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .toggle-button.disabled {
+            background: #6b7280;
+        }
+
+        .toggle-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .preset-section {
+            margin-bottom: 30px;
+            background: #fef3c7;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #fbbf24;
+        }
+
+        .preset-section h3 {
+            color: #92400e;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .preset-button {
+            padding: 10px 15px;
+            background: #f59e0b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .preset-button:hover {
+            background: #d97706;
+            transform: translateY(-1px);
+        }
+
         .results-section {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -203,6 +270,35 @@
             font-size: 0.9em;
         }
 
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 15px;
+            border: 1px solid #666;
+            border-radius: 3px;
+        }
+
+        @media (max-width: 1024px) {
+            .input-section {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
         @media (max-width: 768px) {
             .input-section {
                 grid-template-columns: 1fr;
@@ -225,11 +321,26 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Rectangle Cutting Optimizer</h1>
-            <p>Compare both orientations to find the best cutting layout</p>
+            <h1>Enhanced Rectangle Cutting Optimizer</h1>
+            <p>Optimize cutting layouts with wastage reduction and tolerance controls</p>
         </div>
         
         <div class="content">
+            <div class="preset-section">
+                <h3>🚀 Test Dimensions - Try These Examples:</h3>
+                <div class="preset-buttons">
+                    <button class="preset-button" onclick="loadPreset(2000, 1400, 250, 200)">
+                        Paper: 2000×1400 | Rect: 250×200
+                    </button>
+                    <button class="preset-button" onclick="loadPreset(1800, 1200, 360, 325)">
+                        Paper: 1800×1200 | Rect: 360×325
+                    </button>
+                    <button class="preset-button" onclick="loadPreset(1800, 890, 400, 300)">
+                        Paper: 1800×890 | Rect: 400×300
+                    </button>
+                </div>
+            </div>
+
             <div class="input-section">
                 <div class="input-group">
                     <h3>Paper Dimensions (mm)</h3>
@@ -254,6 +365,41 @@
                         <input type="number" id="rectHeight" value="325.0" step="0.1" min="1">
                     </div>
                 </div>
+
+                <div class="input-group">
+                    <h3>Tolerance Settings</h3>
+                    <div class="tolerance-controls">
+                        <button id="widthToleranceBtn" class="toggle-button" onclick="toggleTolerance('width')">
+                            ✓ Width Tolerance (±5mm)
+                        </button>
+                        <button id="heightToleranceBtn" class="toggle-button" onclick="toggleTolerance('height')">
+                            ✓ Height Tolerance (±5mm)
+                        </button>
+                        <div class="form-group">
+                            <label for="toleranceValue">Tolerance Value (mm)</label>
+                            <input type="number" id="toleranceValue" value="5" step="0.5" min="0" max="50">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: white; border: 2px solid black;"></div>
+                    <span>Main Rectangles</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #10b981;"></div>
+                    <span>Waste-Reducing Rectangles</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #6b7280;"></div>
+                    <span>Tolerance-Reduced Rectangles</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #fee2e2; border: 2px solid red;"></div>
+                    <span>Remaining Waste</span>
+                </div>
             </div>
             
             <div class="results-section" id="resultsSection">
@@ -265,7 +411,7 @@
             </div>
             
             <div class="diagrams-section">
-                <h2>Cutting Layouts</h2>
+                <h2>Cutting Layouts with Waste Reduction</h2>
                 <div class="diagram-container" id="diagramContainer">
                     <!-- Diagrams will be populated by JavaScript -->
                 </div>
@@ -274,6 +420,164 @@
     </div>
 
     <script>
+        let widthTolerance = true;
+        let heightTolerance = true;
+
+        function toggleTolerance(type) {
+            if (type === 'width') {
+                widthTolerance = !widthTolerance;
+                const btn = document.getElementById('widthToleranceBtn');
+                btn.textContent = widthTolerance ? '✓ Width Tolerance (±5mm)' : '✗ Width Tolerance (±5mm)';
+                btn.className = widthTolerance ? 'toggle-button' : 'toggle-button disabled';
+            } else {
+                heightTolerance = !heightTolerance;
+                const btn = document.getElementById('heightToleranceBtn');
+                btn.textContent = heightTolerance ? '✓ Height Tolerance (±5mm)' : '✗ Height Tolerance (±5mm)';
+                btn.className = heightTolerance ? 'toggle-button' : 'toggle-button disabled';
+            }
+            updateResults();
+        }
+
+        function loadPreset(paperW, paperH, rectW, rectH) {
+            document.getElementById('paperWidth').value = paperW;
+            document.getElementById('paperHeight').value = paperH;
+            document.getElementById('rectWidth').value = rectW;
+            document.getElementById('rectHeight').value = rectH;
+            updateResults();
+        }
+
+        function calculateWasteReduction(paperWidth, paperHeight, mainLayout, rectWidth, rectHeight) {
+            const tolerance = parseFloat(document.getElementById('toleranceValue').value);
+            const wasteRects = [];
+            
+            // Calculate waste areas
+            const usedWidth = mainLayout.cols * mainLayout.rectW;
+            const usedHeight = mainLayout.rows * mainLayout.rectH;
+            const rightWaste = paperWidth - usedWidth;
+            const bottomWaste = paperHeight - usedHeight;
+            
+            // Try to fit rectangles in right waste area
+            if (rightWaste > 0) {
+                // Try original orientation
+                const rightCols = Math.floor(rightWaste / rectWidth);
+                const rightRows = Math.floor(paperHeight / rectHeight);
+                if (rightCols > 0 && rightRows > 0) {
+                    wasteRects.push({
+                        x: usedWidth,
+                        y: 0,
+                        cols: rightCols,
+                        rows: rightRows,
+                        rectW: rectWidth,
+                        rectH: rectHeight,
+                        type: 'waste-reduction',
+                        total: rightCols * rightRows
+                    });
+                }
+                
+                // Try rotated orientation
+                const rightColsRot = Math.floor(rightWaste / rectHeight);
+                const rightRowsRot = Math.floor(paperHeight / rectWidth);
+                if (rightColsRot > 0 && rightRowsRot > 0 && rightColsRot * rightRowsRot > (rightCols * rightRows || 0)) {
+                    wasteRects.pop(); // Remove previous if this is better
+                    wasteRects.push({
+                        x: usedWidth,
+                        y: 0,
+                        cols: rightColsRot,
+                        rows: rightRowsRot,
+                        rectW: rectHeight,
+                        rectH: rectWidth,
+                        type: 'waste-reduction',
+                        total: rightColsRot * rightRowsRot
+                    });
+                }
+                
+                // Try with tolerance
+                if (widthTolerance || heightTolerance) {
+                    const toleranceW = widthTolerance ? rectWidth - tolerance : rectWidth;
+                    const toleranceH = heightTolerance ? rectHeight - tolerance : rectHeight;
+                    
+                    const tolCols = Math.floor(rightWaste / toleranceW);
+                    const tolRows = Math.floor(paperHeight / toleranceH);
+                    if (tolCols > 0 && tolRows > 0 && tolCols * tolRows > (wasteRects[wasteRects.length - 1]?.total || 0)) {
+                        wasteRects.pop();
+                        wasteRects.push({
+                            x: usedWidth,
+                            y: 0,
+                            cols: tolCols,
+                            rows: tolRows,
+                            rectW: toleranceW,
+                            rectH: toleranceH,
+                            type: 'tolerance-reduced',
+                            total: tolCols * tolRows
+                        });
+                    }
+                }
+            }
+            
+            // Try to fit rectangles in bottom waste area
+            if (bottomWaste > 0) {
+                const startY = usedHeight;
+                const availableWidth = usedWidth; // Only use the main rectangle area width
+                
+                // Try original orientation
+                const bottomCols = Math.floor(availableWidth / rectWidth);
+                const bottomRows = Math.floor(bottomWaste / rectHeight);
+                if (bottomCols > 0 && bottomRows > 0) {
+                    wasteRects.push({
+                        x: 0,
+                        y: startY,
+                        cols: bottomCols,
+                        rows: bottomRows,
+                        rectW: rectWidth,
+                        rectH: rectHeight,
+                        type: 'waste-reduction',
+                        total: bottomCols * bottomRows
+                    });
+                }
+                
+                // Try rotated orientation
+                const bottomColsRot = Math.floor(availableWidth / rectHeight);
+                const bottomRowsRot = Math.floor(bottomWaste / rectWidth);
+                if (bottomColsRot > 0 && bottomRowsRot > 0 && bottomColsRot * bottomRowsRot > (bottomCols * bottomRows || 0)) {
+                    wasteRects.pop();
+                    wasteRects.push({
+                        x: 0,
+                        y: startY,
+                        cols: bottomColsRot,
+                        rows: bottomRowsRot,
+                        rectW: rectHeight,
+                        rectH: rectWidth,
+                        type: 'waste-reduction',
+                        total: bottomColsRot * bottomRowsRot
+                    });
+                }
+                
+                // Try with tolerance
+                if (widthTolerance || heightTolerance) {
+                    const toleranceW = widthTolerance ? rectWidth - tolerance : rectWidth;
+                    const toleranceH = heightTolerance ? rectHeight - tolerance : rectHeight;
+                    
+                    const tolCols = Math.floor(availableWidth / toleranceW);
+                    const tolRows = Math.floor(bottomWaste / toleranceH);
+                    if (tolCols > 0 && tolRows > 0 && tolCols * tolRows > (wasteRects[wasteRects.length - 1]?.total || 0)) {
+                        wasteRects.pop();
+                        wasteRects.push({
+                            x: 0,
+                            y: startY,
+                            cols: tolCols,
+                            rows: tolRows,
+                            rectW: toleranceW,
+                            rectH: toleranceH,
+                            type: 'tolerance-reduced',
+                            total: tolCols * tolRows
+                        });
+                    }
+                }
+            }
+            
+            return wasteRects;
+        }
+
         function calculatePlacements(paperWidth, paperHeight, rectWidth, rectHeight) {
             // Orientation 1: rectangle as-is
             const cols1 = Math.floor(paperWidth / rectWidth);
@@ -285,30 +589,45 @@
             const rows2 = Math.floor(paperHeight / rectWidth);
             const total2 = cols2 * rows2;
             
+            const placement1 = {
+                cols: cols1,
+                rows: rows1,
+                total: total1,
+                rectW: rectWidth,
+                rectH: rectHeight,
+                name: `${rectWidth}×${rectHeight}mm rectangles`
+            };
+            
+            const placement2 = {
+                cols: cols2,
+                rows: rows2,
+                total: total2,
+                rectW: rectHeight,
+                rectH: rectWidth,
+                name: `${rectHeight}×${rectWidth}mm rectangles (rotated)`
+            };
+            
+            // Calculate waste reduction for both orientations
+            const wasteRects1 = calculateWasteReduction(paperWidth, paperHeight, placement1, rectWidth, rectHeight);
+            const wasteRects2 = calculateWasteReduction(paperWidth, paperHeight, placement2, rectWidth, rectHeight);
+            
+            placement1.wasteRects = wasteRects1;
+            placement2.wasteRects = wasteRects2;
+            placement1.wasteTotal = wasteRects1.reduce((sum, rect) => sum + rect.total, 0);
+            placement2.wasteTotal = wasteRects2.reduce((sum, rect) => sum + rect.total, 0);
+            placement1.totalWithWaste = total1 + placement1.wasteTotal;
+            placement2.totalWithWaste = total2 + placement2.wasteTotal;
+            
             return {
-                orientation1: {
-                    cols: cols1,
-                    rows: rows1,
-                    total: total1,
-                    rectW: rectWidth,
-                    rectH: rectHeight,
-                    name: `${rectWidth}×${rectHeight}mm rectangles`
-                },
-                orientation2: {
-                    cols: cols2,
-                    rows: rows2,
-                    total: total2,
-                    rectW: rectHeight,
-                    rectH: rectWidth,
-                    name: `${rectHeight}×${rectWidth}mm rectangles (rotated)`
-                }
+                orientation1: placement1,
+                orientation2: placement2
             };
         }
 
         function drawDiagram(canvas, paperWidth, paperHeight, placement) {
             const ctx = canvas.getContext('2d');
-            const canvasWidth = 300;
-            const canvasHeight = 200;
+            const canvasWidth = 350;
+            const canvasHeight = 250;
             
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
@@ -333,7 +652,7 @@
             ctx.lineWidth = 2;
             ctx.strokeRect(offsetX, offsetY, paperW, paperH);
             
-            // Draw rectangles
+            // Draw main rectangles
             const rectW = placement.rectW * scale;
             const rectH = placement.rectH * scale;
             
@@ -348,76 +667,74 @@
                 }
             }
             
-            // Draw wastage lines - CORRECTED
+            // Draw waste-reducing rectangles
+            placement.wasteRects.forEach(wasteRect => {
+                const wasteRectW = wasteRect.rectW * scale;
+                const wasteRectH = wasteRect.rectH * scale;
+                const startX = offsetX + wasteRect.x * scale;
+                const startY = offsetY + wasteRect.y * scale;
+                
+                if (wasteRect.type === 'waste-reduction') {
+                    ctx.fillStyle = '#10b981';
+                    ctx.strokeStyle = '#065f46';
+                } else {
+                    ctx.fillStyle = '#6b7280';
+                    ctx.strokeStyle = '#374151';
+                }
+                ctx.lineWidth = 1;
+                
+                for (let row = 0; row < wasteRect.rows; row++) {
+                    for (let col = 0; col < wasteRect.cols; col++) {
+                        const x = startX + col * wasteRectW;
+                        const y = startY + row * wasteRectH;
+                        ctx.fillRect(x, y, wasteRectW, wasteRectH);
+                        ctx.strokeRect(x, y, wasteRectW, wasteRectH);
+                    }
+                }
+            });
+            
+            // Calculate remaining waste areas and draw them
             const usedWidth = placement.cols * placement.rectW;
             const usedHeight = placement.rows * placement.rectH;
-            const rightWaste = paperWidth - usedWidth;
-            const bottomWaste = paperHeight - usedHeight;
             
+            // Calculate what's actually used by waste rectangles
+            let rightWasteUsed = 0;
+            let bottomWasteUsed = 0;
+            
+            placement.wasteRects.forEach(wasteRect => {
+                if (wasteRect.x >= usedWidth) {
+                    rightWasteUsed = Math.max(rightWasteUsed, wasteRect.cols * wasteRect.rectW);
+                }
+                if (wasteRect.y >= usedHeight) {
+                    bottomWasteUsed = Math.max(bottomWasteUsed, wasteRect.rows * wasteRect.rectH);
+                }
+            });
+            
+            // Draw remaining waste areas in light red
+            ctx.fillStyle = '#fee2e2';
             ctx.strokeStyle = 'red';
-            ctx.lineWidth = 2;
-            ctx.fillStyle = 'red';
+            ctx.lineWidth = 1;
             
-            // Right edge wastage (horizontal line)
-            if (rightWaste > 0) {
-                const startX = offsetX + paperW;  // Right edge of paper
-                const startY = offsetY + paperH / 2;  // Middle of paper height
-                const endX = offsetX + usedWidth * scale;  // Right edge of used area
-                const endY = startY;
-                
-                ctx.beginPath();
-                ctx.moveTo(startX, startY);
-                ctx.lineTo(endX, endY);
-                ctx.stroke();
-                
-                // Draw dots
-                ctx.beginPath();
-                ctx.arc(startX, startY, 3, 0, 2 * Math.PI);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(endX, endY, 3, 0, 2 * Math.PI);
-                ctx.fill();
-                
-                // Add text
-                const midX = (startX + endX) / 2;
-                ctx.fillStyle = 'white';
-                ctx.fillRect(midX - 25, startY - 15, 50, 12);
-                ctx.fillStyle = 'red';
-                ctx.font = '10px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(`${rightWaste.toFixed(1)}mm`, midX, startY - 5);
+            // Remaining right waste
+            const remainingRightWaste = (paperWidth - usedWidth) - rightWasteUsed;
+            if (remainingRightWaste > 0) {
+                const x = offsetX + (usedWidth + rightWasteUsed) * scale;
+                const y = offsetY;
+                const w = remainingRightWaste * scale;
+                const h = paperH;
+                ctx.fillRect(x, y, w, h);
+                ctx.strokeRect(x, y, w, h);
             }
             
-            // Bottom edge wastage (vertical line) - CORRECTED
-            if (bottomWaste > 0) {
-                const startX = offsetX + paperW / 2;  // Middle of paper width
-                const startY = offsetY + paperH;  // Bottom edge of paper
-                const endX = startX;
-                const endY = offsetY + usedHeight * scale;  // Bottom edge of used area
-                
-                ctx.strokeStyle = 'red';
-                ctx.beginPath();
-                ctx.moveTo(startX, startY);
-                ctx.lineTo(endX, endY);
-                ctx.stroke();
-                
-                // Draw dots
-                ctx.fillStyle = 'red';
-                ctx.beginPath();
-                ctx.arc(startX, startY, 3, 0, 2 * Math.PI);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(endX, endY, 3, 0, 2 * Math.PI);
-                ctx.fill();
-                
-                // Add text
-                const midY = (startY + endY) / 2;
-                ctx.fillStyle = 'white';
-                ctx.fillRect(startX + 5, midY - 6, 40, 12);
-                ctx.fillStyle = 'red';
-                ctx.font = '10px Arial';
-                ctx.textAlign = 'left';
-                ctx.fillText(`${bottomWaste.toFixed(1)}mm`, startX + 7, midY + 2);
+            // Remaining bottom waste
+            const remainingBottomWaste = (paperHeight - usedHeight) - bottomWasteUsed;
+            if (remainingBottomWaste > 0) {
+                const x = offsetX;
+                const y = offsetY + (usedHeight + bottomWasteUsed) * scale;
+                const w = paperW;
+                const h = remainingBottomWaste * scale;
+                ctx.fillRect(x, y, w, h);
+                ctx.strokeRect(x, y, w, h);
             }
         }
 
@@ -431,46 +748,55 @@
             
             const placements = calculatePlacements(paperWidth, paperHeight, rectWidth, rectHeight);
             
-            // Determine best orientation
-            const bestOrientation = placements.orientation1.total >= placements.orientation2.total ? 1 : 2;
-            const bestTotal = Math.max(placements.orientation1.total, placements.orientation2.total);
+            // Determine best orientation based on total including waste reduction
+            const bestOrientation = placements.orientation1.totalWithWaste >= placements.orientation2.totalWithWaste ? 1 : 2;
             const bestPlacement = bestOrientation === 1 ? placements.orientation1 : placements.orientation2;
             
             // Calculate efficiency for best option
             const totalPaperArea = paperWidth * paperHeight;
-            const usedArea = bestPlacement.cols * bestPlacement.rectW * bestPlacement.rows * bestPlacement.rectH;
-            const efficiency = ((usedArea / totalPaperArea) * 100).toFixed(1);
+            const mainUsedArea = bestPlacement.total * bestPlacement.rectW * bestPlacement.rectH;
+            const wasteUsedArea = bestPlacement.wasteRects.reduce((sum, rect) => 
+                sum + (rect.total * rect.rectW * rect.rectH), 0);
+            const totalUsedArea = mainUsedArea + wasteUsedArea;
+            const efficiency = ((totalUsedArea / totalPaperArea) * 100).toFixed(1);
             
             // Update results section
             const resultsHTML = `
                 <div class="metric-card">
                     <h4>Orientation 1</h4>
-                    <div class="value">${placements.orientation1.total}</div>
-                    <div class="subtext">${placements.orientation1.cols}×${placements.orientation1.rows} grid</div>
+                    <div class="value">${placements.orientation1.totalWithWaste}</div>
+                    <div class="subtext">${placements.orientation1.total} main + ${placements.orientation1.wasteTotal} waste-reduced</div>
                 </div>
                 <div class="metric-card">
                     <h4>Orientation 2</h4>
-                    <div class="value">${placements.orientation2.total}</div>
-                    <div class="subtext">${placements.orientation2.cols}×${placements.orientation2.rows} grid</div>
+                    <div class="value">${placements.orientation2.totalWithWaste}</div>
+                    <div class="subtext">${placements.orientation2.total} main + ${placements.orientation2.wasteTotal} waste-reduced</div>
                 </div>
                 <div class="metric-card best-option">
-                    <h4>Best Option</h4>
-                    <div class="value">Orientation ${bestOrientation}</div>
-                    <div class="subtext">${bestTotal} rectangles</div>
+                    <h4>Best Total</h4>
+                    <div class="value">${bestPlacement.totalWithWaste}</div>
+                    <div class="subtext">Orientation ${bestOrientation}</div>
+                </div>
+                <div class="metric-card">
+                    <h4>Material Efficiency</h4>
+                    <div class="value">${efficiency}%</div>
+                    <div class="subtext">Total area utilization</div>
                 </div>
             `;
             
             document.getElementById('resultsSection').innerHTML = resultsHTML;
             
             // Add recommendation section
-            const difference = Math.abs(placements.orientation1.total - placements.orientation2.total);
+            const totalDifference = Math.abs(placements.orientation1.totalWithWaste - placements.orientation2.totalWithWaste);
+            const mainDifference = Math.abs(placements.orientation1.total - placements.orientation2.total);
+            const wasteDifference = Math.abs(placements.orientation1.wasteTotal - placements.orientation2.wasteTotal);
+            
             let recommendationText = '';
             
-            if (difference === 0) {
-                recommendationText = `Both orientations yield the same result (${bestTotal} rectangles). Choose based on your preference or cutting convenience.`;
+            if (totalDifference === 0) {
+                recommendationText = `Both orientations yield the same total result (${bestPlacement.totalWithWaste} rectangles). Choose based on your preference or cutting convenience. Material efficiency: ${efficiency}%.`;
             } else {
-                const improvementPercentage = ((difference / Math.min(placements.orientation1.total, placements.orientation2.total)) * 100).toFixed(1);
-                recommendationText = `Use Orientation ${bestOrientation} for optimal cutting. This gives you ${difference} more rectangle${difference > 1 ? 's' : ''} (${improvementPercentage}% improvement) with ${efficiency}% material efficiency.`;
+                recommendationText = `Use Orientation ${bestOrientation} for optimal results. Total: ${bestPlacement.totalWithWaste} rectangles (${bestPlacement.total} main + ${bestPlacement.wasteTotal} waste-reduced). This gives you ${totalDifference} more rectangles than the other orientation with ${efficiency}% material efficiency.`;
             }
             
             const recommendationHTML = `
@@ -490,8 +816,9 @@
                         <canvas id="canvas1"></canvas>
                     </div>
                     <div class="diagram-info">
-                        Grid: ${placements.orientation1.cols} × ${placements.orientation1.rows} = ${placements.orientation1.total} rectangles<br>
-                        Paper: ${paperWidth}×${paperHeight}mm
+                        Main: ${placements.orientation1.cols} × ${placements.orientation1.rows} = ${placements.orientation1.total}<br>
+                        Waste-reduced: ${placements.orientation1.wasteTotal}<br>
+                        <strong>Total: ${placements.orientation1.totalWithWaste} rectangles</strong>
                     </div>
                 </div>
                 <div class="diagram">
@@ -500,8 +827,9 @@
                         <canvas id="canvas2"></canvas>
                     </div>
                     <div class="diagram-info">
-                        Grid: ${placements.orientation2.cols} × ${placements.orientation2.rows} = ${placements.orientation2.total} rectangles<br>
-                        Paper: ${paperWidth}×${paperHeight}mm
+                        Main: ${placements.orientation2.cols} × ${placements.orientation2.rows} = ${placements.orientation2.total}<br>
+                        Waste-reduced: ${placements.orientation2.wasteTotal}<br>
+                        <strong>Total: ${placements.orientation2.totalWithWaste} rectangles</strong>
                     </div>
                 </div>
             `;
@@ -518,7 +846,7 @@
 
         // Add event listeners
         document.addEventListener('DOMContentLoaded', function() {
-            const inputs = ['paperWidth', 'paperHeight', 'rectWidth', 'rectHeight'];
+            const inputs = ['paperWidth', 'paperHeight', 'rectWidth', 'rectHeight', 'toleranceValue'];
             inputs.forEach(id => {
                 document.getElementById(id).addEventListener('input', updateResults);
             });
