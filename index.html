@@ -346,11 +346,11 @@
                     <h3>Paper Dimensions (mm)</h3>
                     <div class="form-group">
                         <label for="paperWidth">Paper Width (mm)</label>
-                        <input type="number" id="paperWidth" value="1828.8" step="0.1" min="1">
+                        <input type="number" id="paperWidth" value="2000" step="0.1" min="1">
                     </div>
                     <div class="form-group">
                         <label for="paperHeight">Paper Height (mm)</label>
-                        <input type="number" id="paperHeight" value="889.0" step="0.1" min="1">
+                        <input type="number" id="paperHeight" value="1400" step="0.1" min="1">
                     </div>
                 </div>
                 
@@ -735,6 +735,25 @@
                 const h = remainingBottomWaste * scale;
                 ctx.fillRect(x, y, w, h);
                 ctx.strokeRect(x, y, w, h);
+            }
+
+            // Add dimension labels for waste areas
+            ctx.fillStyle = 'black';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+
+            // Label remaining right waste
+            if (remainingRightWaste > 0) {
+                const labelX = offsetX + (usedWidth + rightWasteUsed + remainingRightWaste/2) * scale;
+                const labelY = offsetY + paperH/2;
+                ctx.fillText(`${remainingRightWaste.toFixed(0)}×${paperHeight.toFixed(0)}`, labelX, labelY);
+            }
+
+            // Label remaining bottom waste  
+            if (remainingBottomWaste > 0) {
+                const labelX = offsetX + paperW/2;
+                const labelY = offsetY + (usedHeight + bottomWasteUsed + remainingBottomWaste/2) * scale;
+                ctx.fillText(`${paperWidth.toFixed(0)}×${remainingBottomWaste.toFixed(0)}`, labelX, labelY);
             }
         }
 
