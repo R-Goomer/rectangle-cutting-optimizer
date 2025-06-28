@@ -706,7 +706,7 @@
                 maxBottomEdge = Math.max(maxBottomEdge, wasteBottomEdge);
             });
             
-            // Draw lines from paper center edges to nearest rectangles
+            // Draw TWO lines from paper center edges - one to main rectangles, one to waste rectangles
             ctx.strokeStyle = '#ff6b6b';
             ctx.lineWidth = 2;
             ctx.setLineDash([5, 5]);
@@ -715,62 +715,90 @@
             const paperCenterX = offsetX + paperW / 2;
             const paperCenterY = offsetY + paperH / 2;
             
-            // Top edge center to nearest rectangle
-            const topEdgeX = paperCenterX;
-            const topEdgeY = offsetY;
-            const nearestTopY = offsetY; // Top of first rectangle row
-            ctx.beginPath();
-            ctx.moveTo(topEdgeX, topEdgeY);
-            ctx.lineTo(topEdgeX, nearestTopY);
-            ctx.stroke();
-            
-            // Bottom edge center to nearest rectangle
-            const bottomEdgeX = paperCenterX;
-            const bottomEdgeY = offsetY + paperH;
-            const nearestBottomY = offsetY + maxBottomEdge * scale; // Bottom of last used area
-            ctx.beginPath();
-            ctx.moveTo(bottomEdgeX, bottomEdgeY);
-            ctx.lineTo(bottomEdgeX, nearestBottomY);
-            ctx.stroke();
-            
-            // Left edge center to nearest rectangle
-            const leftEdgeX = offsetX;
-            const leftEdgeY = paperCenterY;
-            const nearestLeftX = offsetX; // Left of first rectangle column
-            ctx.beginPath();
-            ctx.moveTo(leftEdgeX, leftEdgeY);
-            ctx.lineTo(nearestLeftX, leftEdgeY);
-            ctx.stroke();
-            
-            // Right edge center to nearest rectangle
+            // RIGHT EDGE - Two lines
             const rightEdgeX = offsetX + paperW;
             const rightEdgeY = paperCenterY;
-            const nearestRightX = offsetX + maxRightEdge * scale; // Right of last used area
+            
+            // Line to main rectangles (normal boxes)
+            const mainRightEdge = offsetX + usedWidth * scale;
             ctx.beginPath();
-            ctx.moveTo(rightEdgeX, rightEdgeY);
-            ctx.lineTo(nearestRightX, rightEdgeY);
+            ctx.moveTo(rightEdgeX, rightEdgeY - 10); // Offset up a bit
+            ctx.lineTo(mainRightEdge, rightEdgeY - 10);
             ctx.stroke();
-
-            // Add length label for right line
-            const rightLineLength = Math.abs(rightEdgeX - nearestRightX) / scale;
-            if (rightLineLength > 0) {
+            
+            // Line to waste rectangles (green boxes) if they exist
+            if (maxRightEdge > usedWidth) {
+                const wasteRightEdge = offsetX + maxRightEdge * scale;
+                ctx.beginPath();
+                ctx.moveTo(rightEdgeX, rightEdgeY + 10); // Offset down a bit
+                ctx.lineTo(wasteRightEdge, rightEdgeY + 10);
+                ctx.stroke();
+            }
+            
+            // BOTTOM EDGE - Two lines
+            const bottomEdgeX = paperCenterX;
+            const bottomEdgeY = offsetY + paperH;
+            
+            // Line to main rectangles (normal boxes)
+            const mainBottomEdge = offsetY + usedHeight * scale;
+            ctx.beginPath();
+            ctx.moveTo(bottomEdgeX - 10, bottomEdgeY); // Offset left a bit
+            ctx.lineTo(bottomEdgeX - 10, mainBottomEdge);
+            ctx.stroke();
+            
+            // Line to waste rectangles (green boxes) if they exist
+            if (maxBottomEdge > usedHeight) {
+                const wasteBottomEdge = offsetY + maxBottomEdge * scale;
+                ctx.beginPath();
+                ctx.moveTo(bottomEdgeX + 10, bottomEdgeY); // Offset right a bit
+                ctx.lineTo(bottomEdgeX + 10, wasteBottomEdge);
+                ctx.stroke();
+            }
+            
+            // Add length labels for right lines
+            const mainRightDistance = Math.abs(rightEdgeX - mainRightEdge) / scale;
+            if (mainRightDistance > 0) {
                 ctx.fillStyle = 'red';
                 ctx.font = '9px Arial';
                 ctx.textAlign = 'center';
                 ctx.save();
-                ctx.translate((rightEdgeX + nearestRightX) / 2, rightEdgeY - 20);
+                ctx.translate((rightEdgeX + mainRightEdge) / 2, rightEdgeY - 30);
                 ctx.rotate(-Math.PI / 2);
-                ctx.fillText(`${rightLineLength.toFixed(1)}`, 0, 0);
+                ctx.fillText(`${mainRightDistance.toFixed(1)}`, 0, 0);
                 ctx.restore();
             }
+            
+            if (maxRightEdge > usedWidth) {
+                const wasteRightDistance = Math.abs(rightEdgeX - (offsetX + maxRightEdge * scale)) / scale;
+                if (wasteRightDistance > 0) {
+                    ctx.fillStyle = 'green';
+                    ctx.font = '9px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.save();
+                    ctx.translate((rightEdgeX + offsetX + maxRightEdge * scale) / 2, rightEdgeY + 30);
+                    ctx.rotate(-Math.PI / 2);
+                    ctx.fillText(`${wasteRightDistance.toFixed(1)}`, 0, 0);
+                    ctx.restore();
+                }
+            }
 
-            // Add length label for bottom line  
-            const bottomLineLength = Math.abs(bottomEdgeY - nearestBottomY) / scale;
-            if (bottomLineLength > 0) {
+            // Add length labels for bottom lines  
+            const mainBottomDistance = Math.abs(bottomEdgeY - mainBottomEdge) / scale;
+            if (mainBottomDistance > 0) {
                 ctx.fillStyle = 'red';
                 ctx.font = '9px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText(`${bottomLineLength.toFixed(1)}`, bottomEdgeX + 20, (bottomEdgeY + nearestBottomY) / 2);
+                ctx.fillText(`${mainBottomDistance.toFixed(1)}`, bottomEdgeX - 30, (bottomEdgeY + mainBottomEdge) / 2);
+            }
+            
+            if (maxBottomEdge > usedHeight) {
+                const wasteBottomDistance = Math.abs(bottomEdgeY - (offsetY + maxBottomEdge * scale)) / scale;
+                if (wasteBottomDistance > 0) {
+                    ctx.fillStyle = 'green';
+                    ctx.font = '9px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`${wasteBottomDistance.toFixed(1)}`, bottomEdgeX + 30, (bottomEdgeY + offsetY + maxBottomEdge * scale) / 2);
+                }
             }
             
             // Reset line dash
