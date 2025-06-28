@@ -450,133 +450,118 @@
             updateResults();
         }
 
-        function calculateWasteReduction(paperWidth, paperHeight, mainLayout, rectWidth, rectHeight) {
-            const widthToleranceValue = parseFloat(document.getElementById('widthToleranceValue').value);
-            const heightToleranceValue = parseFloat(document.getElementById('heightToleranceValue').value);
+        function calculateWasteReduction(paperWidth, paperHeight, mainLayout, actualRectWidth, actualRectHeight) {
             const wasteRects = [];
             
-            // Calculate waste areas
+            // Calculate initial waste areas from main layout
             const usedWidth = mainLayout.cols * mainLayout.rectW;
             const usedHeight = mainLayout.rows * mainLayout.rectH;
-            const rightWaste = paperWidth - usedWidth;
-            const bottomWaste = paperHeight - usedHeight;
             
-            // Try to fit rectangles in right waste area
+            // Try to fit rectangles in RIGHT waste area
+            const rightWaste = paperWidth - usedWidth;
             if (rightWaste > 0) {
+                let bestRightLayout = null;
+                let bestRightTotal = 0;
+                
                 // Try original orientation
-                const rightCols = Math.floor(rightWaste / rectWidth);
-                const rightRows = Math.floor(paperHeight / rectHeight);
-                if (rightCols > 0 && rightRows > 0) {
-                    wasteRects.push({
+                const rightCols = Math.floor(rightWaste / actualRectWidth);
+                const rightRows = Math.floor(paperHeight / actualRectHeight); // Use full paper height
+                const rightTotal = rightCols * rightRows;
+                
+                if (rightTotal > bestRightTotal) {
+                    bestRightTotal = rightTotal;
+                    bestRightLayout = {
                         x: usedWidth,
                         y: 0,
                         cols: rightCols,
                         rows: rightRows,
-                        rectW: rectWidth,
-                        rectH: rectHeight,
+                        rectW: actualRectWidth,
+                        rectH: actualRectHeight,
                         type: 'waste-reduction',
-                        total: rightCols * rightRows
-                    });
+                        total: rightTotal
+                    };
                 }
                 
                 // Try rotated orientation
-                const rightColsRot = Math.floor(rightWaste / rectHeight);
-                const rightRowsRot = Math.floor(paperHeight / rectWidth);
-                if (rightColsRot > 0 && rightRowsRot > 0 && rightColsRot * rightRowsRot > (rightCols * rightRows || 0)) {
-                    wasteRects.pop(); // Remove previous if this is better
-                    wasteRects.push({
+                const rightColsRot = Math.floor(rightWaste / actualRectHeight);
+                const rightRowsRot = Math.floor(paperHeight / actualRectWidth); // Use full paper height
+                const rightTotalRot = rightColsRot * rightRowsRot;
+                
+                if (rightTotalRot > bestRightTotal) {
+                    bestRightTotal = rightTotalRot;
+                    bestRightLayout = {
                         x: usedWidth,
                         y: 0,
                         cols: rightColsRot,
                         rows: rightRowsRot,
-                        rectW: rectHeight,
-                        rectH: rectWidth,
+                        rectW: actualRectHeight,
+                        rectH: actualRectWidth,
                         type: 'waste-reduction',
-                        total: rightColsRot * rightRowsRot
-                    });
+                        total: rightTotalRot
+                    };
                 }
                 
-                // Try with tolerance
-                if (widthTolerance || heightTolerance) {
-                    const toleranceW = widthTolerance ? rectWidth - widthToleranceValue : rectWidth;
-                    const toleranceH = heightTolerance ? rectHeight - heightToleranceValue : rectHeight;
-                    
-                    const tolCols = Math.floor(rightWaste / toleranceW);
-                    const tolRows = Math.floor(paperHeight / toleranceH);
-                    if (tolCols > 0 && tolRows > 0 && tolCols * tolRows > (wasteRects[wasteRects.length - 1]?.total || 0)) {
-                        wasteRects.pop();
-                        wasteRects.push({
-                            x: usedWidth,
-                            y: 0,
-                            cols: tolCols,
-                            rows: tolRows,
-                            rectW: toleranceW,
-                            rectH: toleranceH,
-                            type: 'tolerance-reduced',
-                            total: tolCols * tolRows
-                        });
-                    }
+                if (bestRightLayout) {
+                    wasteRects.push(bestRightLayout);
                 }
             }
             
-            // Try to fit rectangles in bottom waste area
+            // Try to fit rectangles in BOTTOM waste area
+            const bottomWaste = paperHeight - usedHeight;
             if (bottomWaste > 0) {
-                const startY = usedHeight;
-                const availableWidth = usedWidth; // Only use the main rectangle area width
+                let bestBottomLayout = null;
+                let bestBottomTotal = 0;
+                
+                // Calculate available width (considering right waste area usage)
+                let availableWidth = usedWidth;
+                const rightWasteUsed = wasteRects.length > 0 ? wasteRects[0].cols * wasteRects[0].rectW : 0;
+                const remainingRightSpace = rightWaste - rightWasteUsed;
+                
+                // If there's remaining right space, we can use full paper width for bottom area
+                if (remainingRightSpace <= 0) {
+                    availableWidth = paperWidth; // Use full width if right area is fully utilized
+                }
                 
                 // Try original orientation
-                const bottomCols = Math.floor(availableWidth / rectWidth);
-                const bottomRows = Math.floor(bottomWaste / rectHeight);
-                if (bottomCols > 0 && bottomRows > 0) {
-                    wasteRects.push({
+                const bottomCols = Math.floor(availableWidth / actualRectWidth);
+                const bottomRows = Math.floor(bottomWaste / actualRectHeight);
+                const bottomTotal = bottomCols * bottomRows;
+                
+                if (bottomTotal > bestBottomTotal) {
+                    bestBottomTotal = bottomTotal;
+                    bestBottomLayout = {
                         x: 0,
-                        y: startY,
+                        y: usedHeight,
                         cols: bottomCols,
                         rows: bottomRows,
-                        rectW: rectWidth,
-                        rectH: rectHeight,
+                        rectW: actualRectWidth,
+                        rectH: actualRectHeight,
                         type: 'waste-reduction',
-                        total: bottomCols * bottomRows
-                    });
+                        total: bottomTotal
+                    };
                 }
                 
                 // Try rotated orientation
-                const bottomColsRot = Math.floor(availableWidth / rectHeight);
-                const bottomRowsRot = Math.floor(bottomWaste / rectWidth);
-                if (bottomColsRot > 0 && bottomRowsRot > 0 && bottomColsRot * bottomRowsRot > (bottomCols * bottomRows || 0)) {
-                    wasteRects.pop();
-                    wasteRects.push({
+                const bottomColsRot = Math.floor(availableWidth / actualRectHeight);
+                const bottomRowsRot = Math.floor(bottomWaste / actualRectWidth);
+                const bottomTotalRot = bottomColsRot * bottomRowsRot;
+                
+                if (bottomTotalRot > bestBottomTotal) {
+                    bestBottomTotal = bottomTotalRot;
+                    bestBottomLayout = {
                         x: 0,
-                        y: startY,
+                        y: usedHeight,
                         cols: bottomColsRot,
                         rows: bottomRowsRot,
-                        rectW: rectHeight,
-                        rectH: rectWidth,
+                        rectW: actualRectHeight,
+                        rectH: actualRectWidth,
                         type: 'waste-reduction',
-                        total: bottomColsRot * bottomRowsRot
-                    });
+                        total: bottomTotalRot
+                    };
                 }
                 
-                // Try with tolerance
-                if (widthTolerance || heightTolerance) {
-                    const toleranceW = widthTolerance ? rectWidth - widthToleranceValue : rectWidth;
-                    const toleranceH = heightTolerance ? rectHeight - heightToleranceValue : rectHeight;
-                    
-                    const tolCols = Math.floor(availableWidth / toleranceW);
-                    const tolRows = Math.floor(bottomWaste / toleranceH);
-                    if (tolCols > 0 && tolRows > 0 && tolCols * tolRows > (wasteRects[wasteRects.length - 1]?.total || 0)) {
-                        wasteRects.pop();
-                        wasteRects.push({
-                            x: 0,
-                            y: startY,
-                            cols: tolCols,
-                            rows: tolRows,
-                            rectW: toleranceW,
-                            rectH: toleranceH,
-                            type: 'tolerance-reduced',
-                            total: tolCols * tolRows
-                        });
-                    }
+                if (bestBottomLayout) {
+                    wasteRects.push(bestBottomLayout);
                 }
             }
             
@@ -625,20 +610,21 @@
                     cols: cols3, rows: rows3, total: total3,
                     rectW: widthTolerance ? toleranceW : rectWidth, 
                     rectH: heightTolerance ? toleranceH : rectHeight,
-                    name: `${(widthTolerance ? toleranceW : rectWidth).toFixed(1)}×${(heightTolerance ? toleranceH : rectHeight).toFixed(1)}mm rectangles (tolerance)`
+                    name: `All rectangles: ${(widthTolerance ? toleranceW : rectWidth).toFixed(1)}×${(heightTolerance ? toleranceH : rectHeight).toFixed(1)}mm`
                 },
                 orientation4: {
                     cols: cols4, rows: rows4, total: total4,
                     rectW: heightTolerance ? toleranceH : rectHeight, 
                     rectH: widthTolerance ? toleranceW : rectWidth,
-                    name: `${(heightTolerance ? toleranceH : rectHeight).toFixed(1)}×${(widthTolerance ? toleranceW : rectWidth).toFixed(1)}mm rectangles (rotated + tolerance)`
+                    name: `All rectangles: ${(heightTolerance ? toleranceH : rectHeight).toFixed(1)}×${(widthTolerance ? toleranceW : rectWidth).toFixed(1)}mm (rotated)`
                 }
             };
             
             // Calculate waste reduction for all orientations
             Object.keys(placements).forEach(key => {
                 const placement = placements[key];
-                const wasteRects = calculateWasteReduction(paperWidth, paperHeight, placement, rectWidth, rectHeight);
+                // Use the actual rectangle dimensions from the placement
+                const wasteRects = calculateWasteReduction(paperWidth, paperHeight, placement, placement.rectW, placement.rectH);
                 placement.wasteRects = wasteRects;
                 placement.wasteTotal = wasteRects.reduce((sum, rect) => sum + rect.total, 0);
                 placement.totalWithWaste = placement.total + placement.wasteTotal;
@@ -717,47 +703,79 @@
             });
             
             // Calculate remaining waste areas and draw them
+            // Calculate remaining waste areas more accurately
             const usedWidth = placement.cols * placement.rectW;
             const usedHeight = placement.rows * placement.rectH;
-            
-            // Calculate what's actually used by waste rectangles
-            let rightWasteUsed = 0;
-            let bottomWasteUsed = 0;
-            
+
+            // Calculate actual space used by waste rectangles
+            let actualRightWasteUsed = 0;
+            let actualBottomWasteUsed = 0;
+            let rightWasteHeight = 0;
+            let bottomWasteWidth = 0;
+
             placement.wasteRects.forEach(wasteRect => {
                 if (wasteRect.x >= usedWidth) {
-                    rightWasteUsed = Math.max(rightWasteUsed, wasteRect.cols * wasteRect.rectW);
+                    // This is a right waste rectangle
+                    actualRightWasteUsed = wasteRect.cols * wasteRect.rectW;
+                    rightWasteHeight = wasteRect.rows * wasteRect.rectH;
                 }
                 if (wasteRect.y >= usedHeight) {
-                    bottomWasteUsed = Math.max(bottomWasteUsed, wasteRect.rows * wasteRect.rectH);
+                    // This is a bottom waste rectangle
+                    actualBottomWasteUsed = wasteRect.rows * wasteRect.rectH;
+                    bottomWasteWidth = wasteRect.cols * wasteRect.rectW;
                 }
             });
-            
+
             // Draw remaining waste areas in light red
             ctx.fillStyle = '#fee2e2';
             ctx.strokeStyle = 'red';
             ctx.lineWidth = 1;
-            
-            // Remaining right waste
-            const remainingRightWaste = (paperWidth - usedWidth) - rightWasteUsed;
+
+            // Remaining right waste (only the unused portion)
+            const totalRightWaste = paperWidth - usedWidth;
+            const remainingRightWaste = totalRightWaste - actualRightWasteUsed;
             if (remainingRightWaste > 0) {
-                const x = offsetX + (usedWidth + rightWasteUsed) * scale;
+                const x = offsetX + (usedWidth + actualRightWasteUsed) * scale;
                 const y = offsetY;
                 const w = remainingRightWaste * scale;
                 const h = paperH;
                 ctx.fillRect(x, y, w, h);
                 ctx.strokeRect(x, y, w, h);
             }
-            
-            // Remaining bottom waste
-            const remainingBottomWaste = (paperHeight - usedHeight) - bottomWasteUsed;
+
+            // Remaining bottom waste - need to be more careful here
+            const totalBottomWaste = paperHeight - usedHeight;
+            const remainingBottomWaste = totalBottomWaste - actualBottomWasteUsed;
             if (remainingBottomWaste > 0) {
                 const x = offsetX;
-                const y = offsetY + (usedHeight + bottomWasteUsed) * scale;
-                const w = paperW;
+                const y = offsetY + (usedHeight + actualBottomWasteUsed) * scale;
+                let w = paperW;
+                
+                // If bottom waste rectangle used full width, then remaining area is full width
+                // Otherwise, we need to account for potential overlap with right area
+                if (bottomWasteWidth < paperWidth && actualRightWasteUsed > 0) {
+                    w = usedWidth * scale; // Only use main area width to avoid overlap
+                }
+                
                 const h = remainingBottomWaste * scale;
-                ctx.fillRect(x, y, w, h);
-                ctx.strokeRect(x, y, w, h);
+                if (h > 0) {
+                    ctx.fillRect(x, y, w, h);
+                    ctx.strokeRect(x, y, w, h);
+                }
+            }
+
+            // Corner waste area (if both right and bottom waste exist and don't fully utilize their areas)
+            if (actualRightWasteUsed > 0 && actualBottomWasteUsed > 0 && 
+                rightWasteHeight < paperHeight && bottomWasteWidth < paperWidth) {
+                const cornerX = offsetX + (usedWidth + actualRightWasteUsed) * scale;
+                const cornerY = offsetY + (usedHeight + actualBottomWasteUsed) * scale;
+                const cornerW = (paperWidth - usedWidth - actualRightWasteUsed) * scale;
+                const cornerH = (paperHeight - usedHeight - actualBottomWasteUsed) * scale;
+                
+                if (cornerW > 0 && cornerH > 0) {
+                    ctx.fillRect(cornerX, cornerY, cornerW, cornerH);
+                    ctx.strokeRect(cornerX, cornerY, cornerW, cornerH);
+                }
             }
 
             // Add dimension labels for waste areas
@@ -767,7 +785,7 @@
 
             // Label remaining right waste
             if (remainingRightWaste > 0) {
-                const labelX = offsetX + (usedWidth + rightWasteUsed + remainingRightWaste/2) * scale;
+                const labelX = offsetX + (usedWidth + actualRightWasteUsed + remainingRightWaste/2) * scale;
                 const labelY = offsetY + paperH/2;
                 ctx.fillText(`${remainingRightWaste.toFixed(0)}×${paperHeight.toFixed(0)}`, labelX, labelY);
             }
@@ -775,7 +793,7 @@
             // Label remaining bottom waste  
             if (remainingBottomWaste > 0) {
                 const labelX = offsetX + paperW/2;
-                const labelY = offsetY + (usedHeight + bottomWasteUsed + remainingBottomWaste/2) * scale;
+                const labelY = offsetY + (usedHeight + actualBottomWasteUsed + remainingBottomWaste/2) * scale;
                 ctx.fillText(`${paperWidth.toFixed(0)}×${remainingBottomWaste.toFixed(0)}`, labelX, labelY);
             }
 
