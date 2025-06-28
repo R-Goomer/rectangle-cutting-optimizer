@@ -368,17 +368,17 @@
                     <h3>Tolerance Settings</h3>
                     <div class="tolerance-controls">
                         <button id="widthToleranceBtn" class="toggle-button" onclick="toggleTolerance('width')">
-                            ✓ Width Tolerance (±5mm)
+                            ✓ Width Tolerance
                         </button>
                         <button id="heightToleranceBtn" class="toggle-button" onclick="toggleTolerance('height')">
-                            ✓ Height Tolerance (±5mm)
+                            ✓ Height Tolerance
                         </button>
                         <div class="form-group">
-                            <label for="widthToleranceValue">Width Tolerance (mm)</label>
+                            <label for="widthToleranceValue">Width Margin (mm)</label>
                             <input type="number" id="widthToleranceValue" value="5" step="0.5" min="0" max="50">
                         </div>
                         <div class="form-group">
-                            <label for="heightToleranceValue">Height Tolerance (mm)</label>
+                            <label for="heightToleranceValue">Height Margin (mm)</label>
                             <input type="number" id="heightToleranceValue" value="5" step="0.5" min="0" max="50">
                         </div>
                     </div>
@@ -513,15 +513,9 @@
                 let bestBottomTotal = 0;
                 
                 // Calculate available width (considering right waste area usage)
-                let availableWidth = usedWidth;
-                const rightWasteUsed = wasteRects.length > 0 ? wasteRects[0].cols * wasteRects[0].rectW : 0;
-                const remainingRightSpace = rightWaste - rightWasteUsed;
-                
-                // If there's remaining right space, we can use full paper width for bottom area
-                if (remainingRightSpace <= 0) {
-                    availableWidth = paperWidth; // Use full width if right area is fully utilized
-                }
-                
+                // Always use full paper width and height for waste areas
+                let availableWidth = paperWidth;
+
                 // Try original orientation
                 const bottomCols = Math.floor(availableWidth / actualRectWidth);
                 const bottomRows = Math.floor(bottomWaste / actualRectHeight);
@@ -610,13 +604,13 @@
                     cols: cols3, rows: rows3, total: total3,
                     rectW: widthTolerance ? toleranceW : rectWidth, 
                     rectH: heightTolerance ? toleranceH : rectHeight,
-                    name: `All rectangles: ${(widthTolerance ? toleranceW : rectWidth).toFixed(1)}×${(heightTolerance ? toleranceH : rectHeight).toFixed(1)}mm`
+                    name: `Margin: ${(widthTolerance ? toleranceW : rectWidth).toFixed(1)}×${(heightTolerance ? toleranceH : rectHeight).toFixed(1)}mm`
                 },
                 orientation4: {
                     cols: cols4, rows: rows4, total: total4,
                     rectW: heightTolerance ? toleranceH : rectHeight, 
                     rectH: widthTolerance ? toleranceW : rectWidth,
-                    name: `All rectangles: ${(heightTolerance ? toleranceH : rectHeight).toFixed(1)}×${(widthTolerance ? toleranceW : rectWidth).toFixed(1)}mm (rotated)`
+                    name: `Margin: ${(heightTolerance ? toleranceH : rectHeight).toFixed(1)}×${(widthTolerance ? toleranceW : rectWidth).toFixed(1)}mm (rotated)`
                 }
             };
             
@@ -676,20 +670,15 @@
                 }
             }
             
-            // Draw waste-reducing rectangles
+            // Draw waste-reducing rectangles (green ones only)
             placement.wasteRects.forEach(wasteRect => {
                 const wasteRectW = wasteRect.rectW * scale;
                 const wasteRectH = wasteRect.rectH * scale;
                 const startX = offsetX + wasteRect.x * scale;
                 const startY = offsetY + wasteRect.y * scale;
                 
-                if (wasteRect.type === 'waste-reduction') {
-                    ctx.fillStyle = '#10b981';
-                    ctx.strokeStyle = '#065f46';
-                } else {
-                    ctx.fillStyle = '#6b7280';
-                    ctx.strokeStyle = '#374151';
-                }
+                ctx.fillStyle = '#10b981';
+                ctx.strokeStyle = '#065f46';
                 ctx.lineWidth = 1;
                 
                 for (let row = 0; row < wasteRect.rows; row++) {
@@ -702,100 +691,90 @@
                 }
             });
             
-            // Calculate remaining waste areas and draw them
-            // Calculate remaining waste areas more accurately
+            // Calculate actual used areas
             const usedWidth = placement.cols * placement.rectW;
             const usedHeight = placement.rows * placement.rectH;
-
+            
             // Calculate actual space used by waste rectangles
-            let actualRightWasteUsed = 0;
-            let actualBottomWasteUsed = 0;
-            let rightWasteHeight = 0;
-            let bottomWasteWidth = 0;
-
+            let maxRightEdge = usedWidth;
+            let maxBottomEdge = usedHeight;
+            
             placement.wasteRects.forEach(wasteRect => {
-                if (wasteRect.x >= usedWidth) {
-                    // This is a right waste rectangle
-                    actualRightWasteUsed = wasteRect.cols * wasteRect.rectW;
-                    rightWasteHeight = wasteRect.rows * wasteRect.rectH;
-                }
-                if (wasteRect.y >= usedHeight) {
-                    // This is a bottom waste rectangle
-                    actualBottomWasteUsed = wasteRect.rows * wasteRect.rectH;
-                    bottomWasteWidth = wasteRect.cols * wasteRect.rectW;
-                }
+                const wasteRightEdge = wasteRect.x + (wasteRect.cols * wasteRect.rectW);
+                const wasteBottomEdge = wasteRect.y + (wasteRect.rows * wasteRect.rectH);
+                maxRightEdge = Math.max(maxRightEdge, wasteRightEdge);
+                maxBottomEdge = Math.max(maxBottomEdge, wasteBottomEdge);
             });
+            
+            // Draw lines from paper center edges to nearest rectangles
+            ctx.strokeStyle = '#ff6b6b';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            
+            // Paper center points on edges
+            const paperCenterX = offsetX + paperW / 2;
+            const paperCenterY = offsetY + paperH / 2;
+            
+            // Top edge center to nearest rectangle
+            const topEdgeX = paperCenterX;
+            const topEdgeY = offsetY;
+            const nearestTopY = offsetY; // Top of first rectangle row
+            ctx.beginPath();
+            ctx.moveTo(topEdgeX, topEdgeY);
+            ctx.lineTo(topEdgeX, nearestTopY);
+            ctx.stroke();
+            
+            // Bottom edge center to nearest rectangle
+            const bottomEdgeX = paperCenterX;
+            const bottomEdgeY = offsetY + paperH;
+            const nearestBottomY = offsetY + maxBottomEdge * scale; // Bottom of last used area
+            ctx.beginPath();
+            ctx.moveTo(bottomEdgeX, bottomEdgeY);
+            ctx.lineTo(bottomEdgeX, nearestBottomY);
+            ctx.stroke();
+            
+            // Left edge center to nearest rectangle
+            const leftEdgeX = offsetX;
+            const leftEdgeY = paperCenterY;
+            const nearestLeftX = offsetX; // Left of first rectangle column
+            ctx.beginPath();
+            ctx.moveTo(leftEdgeX, leftEdgeY);
+            ctx.lineTo(nearestLeftX, leftEdgeY);
+            ctx.stroke();
+            
+            // Right edge center to nearest rectangle
+            const rightEdgeX = offsetX + paperW;
+            const rightEdgeY = paperCenterY;
+            const nearestRightX = offsetX + maxRightEdge * scale; // Right of last used area
+            ctx.beginPath();
+            ctx.moveTo(rightEdgeX, rightEdgeY);
+            ctx.lineTo(nearestRightX, rightEdgeY);
+            ctx.stroke();
 
-            // Draw remaining waste areas in light red
-            ctx.fillStyle = '#fee2e2';
-            ctx.strokeStyle = 'red';
-            ctx.lineWidth = 1;
-
-            // Remaining right waste (only the unused portion)
-            const totalRightWaste = paperWidth - usedWidth;
-            const remainingRightWaste = totalRightWaste - actualRightWasteUsed;
-            if (remainingRightWaste > 0) {
-                const x = offsetX + (usedWidth + actualRightWasteUsed) * scale;
-                const y = offsetY;
-                const w = remainingRightWaste * scale;
-                const h = paperH;
-                ctx.fillRect(x, y, w, h);
-                ctx.strokeRect(x, y, w, h);
+            // Add length label for right line
+            const rightLineLength = Math.abs(rightEdgeX - nearestRightX) / scale;
+            if (rightLineLength > 0) {
+                ctx.fillStyle = 'red';
+                ctx.font = '9px Arial';
+                ctx.textAlign = 'center';
+                ctx.save();
+                ctx.translate((rightEdgeX + nearestRightX) / 2, rightEdgeY - 20);
+                ctx.rotate(-Math.PI / 2);
+                ctx.fillText(`${rightLineLength.toFixed(1)}`, 0, 0);
+                ctx.restore();
             }
 
-            // Remaining bottom waste - need to be more careful here
-            const totalBottomWaste = paperHeight - usedHeight;
-            const remainingBottomWaste = totalBottomWaste - actualBottomWasteUsed;
-            if (remainingBottomWaste > 0) {
-                const x = offsetX;
-                const y = offsetY + (usedHeight + actualBottomWasteUsed) * scale;
-                let w = paperW;
-                
-                // If bottom waste rectangle used full width, then remaining area is full width
-                // Otherwise, we need to account for potential overlap with right area
-                if (bottomWasteWidth < paperWidth && actualRightWasteUsed > 0) {
-                    w = usedWidth * scale; // Only use main area width to avoid overlap
-                }
-                
-                const h = remainingBottomWaste * scale;
-                if (h > 0) {
-                    ctx.fillRect(x, y, w, h);
-                    ctx.strokeRect(x, y, w, h);
-                }
+            // Add length label for bottom line  
+            const bottomLineLength = Math.abs(bottomEdgeY - nearestBottomY) / scale;
+            if (bottomLineLength > 0) {
+                ctx.fillStyle = 'red';
+                ctx.font = '9px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${bottomLineLength.toFixed(1)}`, bottomEdgeX + 20, (bottomEdgeY + nearestBottomY) / 2);
             }
-
-            // Corner waste area (if both right and bottom waste exist and don't fully utilize their areas)
-            if (actualRightWasteUsed > 0 && actualBottomWasteUsed > 0 && 
-                rightWasteHeight < paperHeight && bottomWasteWidth < paperWidth) {
-                const cornerX = offsetX + (usedWidth + actualRightWasteUsed) * scale;
-                const cornerY = offsetY + (usedHeight + actualBottomWasteUsed) * scale;
-                const cornerW = (paperWidth - usedWidth - actualRightWasteUsed) * scale;
-                const cornerH = (paperHeight - usedHeight - actualBottomWasteUsed) * scale;
-                
-                if (cornerW > 0 && cornerH > 0) {
-                    ctx.fillRect(cornerX, cornerY, cornerW, cornerH);
-                    ctx.strokeRect(cornerX, cornerY, cornerW, cornerH);
-                }
-            }
-
-            // Add dimension labels for waste areas
-            ctx.fillStyle = 'black';
-            ctx.font = '10px Arial';
-            ctx.textAlign = 'center';
-
-            // Label remaining right waste
-            if (remainingRightWaste > 0) {
-                const labelX = offsetX + (usedWidth + actualRightWasteUsed + remainingRightWaste/2) * scale;
-                const labelY = offsetY + paperH/2;
-                ctx.fillText(`${remainingRightWaste.toFixed(0)}×${paperHeight.toFixed(0)}`, labelX, labelY);
-            }
-
-            // Label remaining bottom waste  
-            if (remainingBottomWaste > 0) {
-                const labelX = offsetX + paperW/2;
-                const labelY = offsetY + (usedHeight + actualBottomWasteUsed + remainingBottomWaste/2) * scale;
-                ctx.fillText(`${paperWidth.toFixed(0)}×${remainingBottomWaste.toFixed(0)}`, labelX, labelY);
-            }
+            
+            // Reset line dash
+            ctx.setLineDash([]);
 
             // Add dimension labels
             ctx.fillStyle = 'blue';
@@ -843,12 +822,7 @@
                     const startX = offsetX + wasteRect.x * scale;
                     const startY = offsetY + wasteRect.y * scale;
                     
-                    // Set color based on rectangle type
-                    if (wasteRect.type === 'waste-reduction') {
-                        ctx.fillStyle = 'black';
-                    } else {
-                        ctx.fillStyle = 'black';
-                    }
+                    ctx.fillStyle = 'black';
                     
                     // Width dimension (bottom edge of first waste rectangle)
                     const wasteWidthLabelX = startX + wasteRectW / 2;
@@ -889,7 +863,7 @@
                 }
             }
             
-            // Calculate efficiency for best option
+            // Calculate efficiency for best option (only counting actual rectangles, no waste areas)
             const totalPaperArea = paperWidth * paperHeight;
             const mainUsedArea = bestPlacement.total * bestPlacement.rectW * bestPlacement.rectH;
             const wasteUsedArea = bestPlacement.wasteRects.reduce((sum, rect) => 
@@ -907,28 +881,6 @@
             `;
             
             document.getElementById('resultsSection').innerHTML = resultsHTML;
-            
-            // Add recommendation section
-            // const totalDifference = Math.abs(placements.orientation1.totalWithWaste - placements.orientation2.totalWithWaste);
-            // const mainDifference = Math.abs(placements.orientation1.total - placements.orientation2.total);
-            // const wasteDifference = Math.abs(placements.orientation1.wasteTotal - placements.orientation2.wasteTotal);
-            
-            // let recommendationText = '';
-            
-            // if (totalDifference === 0) {
-            //     recommendationText = `Both orientations yield the same total result (${bestPlacement.totalWithWaste} rectangles). Choose based on your preference or cutting convenience. Material efficiency: ${efficiency}%.`;
-            // } else {
-            //     recommendationText = `Use Orientation ${bestOrientation} for optimal results. Total: ${bestPlacement.totalWithWaste} rectangles (${bestPlacement.total} main + ${bestPlacement.wasteTotal} waste-reduced). This gives you ${totalDifference} more rectangles than the other orientation with ${efficiency}% material efficiency.`;
-            // }
-            
-            // const recommendationHTML = `
-            //     <div class="recommendation">
-            //         <h3>Recommendation</h3>
-            //         <p>${recommendationText}</p>
-            //     </div>
-            // `;
-            
-            // document.getElementById('recommendationSection').innerHTML = recommendationHTML;
             
             // Update diagrams
             const diagramsHTML = `
@@ -986,9 +938,6 @@
                 const canvas = document.getElementById(`canvas${i}`);
                 drawDiagram(canvas, paperWidth, paperHeight, placements[`orientation${i}`]);
             }
-            
-            drawDiagram(canvas1, paperWidth, paperHeight, placements.orientation1);
-            drawDiagram(canvas2, paperWidth, paperHeight, placements.orientation2);
         }
 
         // Add event listeners
