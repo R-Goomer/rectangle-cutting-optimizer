@@ -596,24 +596,19 @@
             const rows2 = Math.floor(paperHeight / rectWidth);
             const total2 = cols2 * rows2;
             
-            // New tolerance layouts (layouts 3, 4 & 5)
+            // New tolerance layouts (layouts 3 & 4)
             const toleranceH = rectHeight - heightToleranceValue;
             const toleranceW = rectWidth - widthToleranceValue;
-            
-            // Layout 3: Height tolerance on all rectangles
-            const cols3 = Math.floor(paperWidth / rectWidth);
-            const rows3 = Math.floor(paperHeight / toleranceH);
+
+            // Layout 3: Same as layout 1 but with enabled tolerances applied
+            const cols3 = Math.floor(paperWidth / (widthTolerance ? toleranceW : rectWidth));
+            const rows3 = Math.floor(paperHeight / (heightTolerance ? toleranceH : rectHeight));
             const total3 = cols3 * rows3;
-            
-            // Layout 4: Width tolerance on all rectangles  
-            const cols4 = Math.floor(paperWidth / toleranceW);
-            const rows4 = Math.floor(paperHeight / rectHeight);
+
+            // Layout 4: Same as layout 2 but with enabled tolerances applied
+            const cols4 = Math.floor(paperWidth / (heightTolerance ? toleranceH : rectHeight));
+            const rows4 = Math.floor(paperHeight / (widthTolerance ? toleranceW : rectWidth));
             const total4 = cols4 * rows4;
-            
-            // Layout 5: Both tolerances on all rectangles
-            const cols5 = Math.floor(paperWidth / toleranceW);
-            const rows5 = Math.floor(paperHeight / toleranceH);
-            const total5 = cols5 * rows5;
             
             const placements = {
                 orientation1: {
@@ -628,18 +623,15 @@
                 },
                 orientation3: {
                     cols: cols3, rows: rows3, total: total3,
-                    rectW: rectWidth, rectH: toleranceH,
-                    name: `${rectWidth}×${toleranceH.toFixed(1)}mm rectangles (height tolerance)`
+                    rectW: widthTolerance ? toleranceW : rectWidth, 
+                    rectH: heightTolerance ? toleranceH : rectHeight,
+                    name: `${(widthTolerance ? toleranceW : rectWidth).toFixed(1)}×${(heightTolerance ? toleranceH : rectHeight).toFixed(1)}mm rectangles (tolerance)`
                 },
                 orientation4: {
                     cols: cols4, rows: rows4, total: total4,
-                    rectW: toleranceW, rectH: rectHeight,
-                    name: `${toleranceW.toFixed(1)}×${rectHeight}mm rectangles (width tolerance)`
-                },
-                orientation5: {
-                    cols: cols5, rows: rows5, total: total5,
-                    rectW: toleranceW, rectH: toleranceH,
-                    name: `${toleranceW.toFixed(1)}×${toleranceH.toFixed(1)}mm rectangles (both tolerances)`
+                    rectW: heightTolerance ? toleranceH : rectHeight, 
+                    rectH: widthTolerance ? toleranceW : rectWidth,
+                    name: `${(heightTolerance ? toleranceH : rectHeight).toFixed(1)}×${(widthTolerance ? toleranceW : rectWidth).toFixed(1)}mm rectangles (rotated + tolerance)`
                 }
             };
             
@@ -870,7 +862,7 @@
             let bestPlacement = placements.orientation1;
             let maxTotal = placements.orientation1.totalWithWaste;
 
-            for (let i = 2; i <= 5; i++) {
+            for (let i = 2; i <= 4; i++) {
                 const placement = placements[`orientation${i}`];
                 if (placement.totalWithWaste > maxTotal) {
                     maxTotal = placement.totalWithWaste;
@@ -966,23 +958,13 @@
                         <strong>Total: ${placements.orientation4.totalWithWaste} rectangles</strong>
                     </div>
                 </div>
-                <div class="diagram">
-                    <h3>5. ${placements.orientation5.name}</h3>
-                    <div class="canvas-container">
-                        <canvas id="canvas5"></canvas>
-                    </div>
-                    <div class="diagram-info">
-                        Main: ${placements.orientation5.cols} × ${placements.orientation5.rows} = ${placements.orientation5.total}<br>
-                        Waste-reduced: ${placements.orientation5.wasteTotal}<br>
-                        <strong>Total: ${placements.orientation5.totalWithWaste} rectangles</strong>
-                    </div>
-                </div>
             `;
+            
             
             document.getElementById('diagramContainer').innerHTML = diagramsHTML;
             
             // Draw diagrams
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 4; i++) {
                 const canvas = document.getElementById(`canvas${i}`);
                 drawDiagram(canvas, paperWidth, paperHeight, placements[`orientation${i}`]);
             }
