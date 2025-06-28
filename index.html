@@ -882,34 +882,17 @@
             
             document.getElementById('resultsSection').innerHTML = resultsHTML;
             
-            // Update diagrams
+            // Get tolerance values for margin display
+            const widthToleranceValue = parseFloat(document.getElementById('widthToleranceValue').value);
+            const heightToleranceValue = parseFloat(document.getElementById('heightToleranceValue').value);
+            const marginText = `(${widthToleranceValue}×${heightToleranceValue})`;
+
+            // Update diagrams - reorder to show 3,4,1,2
             const diagramsHTML = `
                 <div class="diagram">
-                    <h3>1. ${placements.orientation1.name}</h3>
+                    <h3>1. ${placements.orientation3.name} ${marginText}</h3>
                     <div class="canvas-container">
                         <canvas id="canvas1"></canvas>
-                    </div>
-                    <div class="diagram-info">
-                        Main: ${placements.orientation1.cols} × ${placements.orientation1.rows} = ${placements.orientation1.total}<br>
-                        Waste-reduced: ${placements.orientation1.wasteTotal}<br>
-                        <strong>Total: ${placements.orientation1.totalWithWaste} rectangles</strong>
-                    </div>
-                </div>
-                <div class="diagram">
-                    <h3>2. ${placements.orientation2.name}</h3>
-                    <div class="canvas-container">
-                        <canvas id="canvas2"></canvas>
-                    </div>
-                    <div class="diagram-info">
-                        Main: ${placements.orientation2.cols} × ${placements.orientation2.rows} = ${placements.orientation2.total}<br>
-                        Waste-reduced: ${placements.orientation2.wasteTotal}<br>
-                        <strong>Total: ${placements.orientation2.totalWithWaste} rectangles</strong>
-                    </div>
-                </div>
-                <div class="diagram">
-                    <h3>3. ${placements.orientation3.name}</h3>
-                    <div class="canvas-container">
-                        <canvas id="canvas3"></canvas>
                     </div>
                     <div class="diagram-info">
                         Main: ${placements.orientation3.cols} × ${placements.orientation3.rows} = ${placements.orientation3.total}<br>
@@ -918,14 +901,36 @@
                     </div>
                 </div>
                 <div class="diagram">
-                    <h3>4. ${placements.orientation4.name}</h3>
+                    <h3>2. ${placements.orientation4.name} ${marginText}</h3>
                     <div class="canvas-container">
-                        <canvas id="canvas4"></canvas>
+                        <canvas id="canvas2"></canvas>
                     </div>
                     <div class="diagram-info">
                         Main: ${placements.orientation4.cols} × ${placements.orientation4.rows} = ${placements.orientation4.total}<br>
                         Waste-reduced: ${placements.orientation4.wasteTotal}<br>
                         <strong>Total: ${placements.orientation4.totalWithWaste} rectangles</strong>
+                    </div>
+                </div>
+                <div class="diagram">
+                    <h3>3. ${placements.orientation1.name}</h3>
+                    <div class="canvas-container">
+                        <canvas id="canvas3"></canvas>
+                    </div>
+                    <div class="diagram-info">
+                        Main: ${placements.orientation1.cols} × ${placements.orientation1.rows} = ${placements.orientation1.total}<br>
+                        Waste-reduced: ${placements.orientation1.wasteTotal}<br>
+                        <strong>Total: ${placements.orientation1.totalWithWaste} rectangles</strong>
+                    </div>
+                </div>
+                <div class="diagram">
+                    <h3>4. ${placements.orientation2.name}</h3>
+                    <div class="canvas-container">
+                        <canvas id="canvas4"></canvas>
+                    </div>
+                    <div class="diagram-info">
+                        Main: ${placements.orientation2.cols} × ${placements.orientation2.rows} = ${placements.orientation2.total}<br>
+                        Waste-reduced: ${placements.orientation2.wasteTotal}<br>
+                        <strong>Total: ${placements.orientation2.totalWithWaste} rectangles</strong>
                     </div>
                 </div>
             `;
@@ -936,7 +941,10 @@
             // Draw diagrams
             for (let i = 1; i <= 4; i++) {
                 const canvas = document.getElementById(`canvas${i}`);
-                drawDiagram(canvas, paperWidth, paperHeight, placements[`orientation${i}`]);
+                if (i === 1) drawDiagram(canvas, paperWidth, paperHeight, placements.orientation3);
+                else if (i === 2) drawDiagram(canvas, paperWidth, paperHeight, placements.orientation4);
+                else if (i === 3) drawDiagram(canvas, paperWidth, paperHeight, placements.orientation1);
+                else if (i === 4) drawDiagram(canvas, paperWidth, paperHeight, placements.orientation2);
             }
         }
 
