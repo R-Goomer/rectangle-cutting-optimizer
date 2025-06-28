@@ -584,49 +584,75 @@
         }
 
         function calculatePlacements(paperWidth, paperHeight, rectWidth, rectHeight) {
-            // Orientation 1: rectangle as-is
+            const widthToleranceValue = parseFloat(document.getElementById('widthToleranceValue').value);
+            const heightToleranceValue = parseFloat(document.getElementById('heightToleranceValue').value);
+            
+            // Original orientations (layouts 1 & 2)
             const cols1 = Math.floor(paperWidth / rectWidth);
             const rows1 = Math.floor(paperHeight / rectHeight);
             const total1 = cols1 * rows1;
             
-            // Orientation 2: rectangle rotated 90°
             const cols2 = Math.floor(paperWidth / rectHeight);
             const rows2 = Math.floor(paperHeight / rectWidth);
             const total2 = cols2 * rows2;
             
-            const placement1 = {
-                cols: cols1,
-                rows: rows1,
-                total: total1,
-                rectW: rectWidth,
-                rectH: rectHeight,
-                name: `${rectWidth}×${rectHeight}mm rectangles`
+            // New tolerance layouts (layouts 3, 4 & 5)
+            const toleranceH = rectHeight - heightToleranceValue;
+            const toleranceW = rectWidth - widthToleranceValue;
+            
+            // Layout 3: Height tolerance on all rectangles
+            const cols3 = Math.floor(paperWidth / rectWidth);
+            const rows3 = Math.floor(paperHeight / toleranceH);
+            const total3 = cols3 * rows3;
+            
+            // Layout 4: Width tolerance on all rectangles  
+            const cols4 = Math.floor(paperWidth / toleranceW);
+            const rows4 = Math.floor(paperHeight / rectHeight);
+            const total4 = cols4 * rows4;
+            
+            // Layout 5: Both tolerances on all rectangles
+            const cols5 = Math.floor(paperWidth / toleranceW);
+            const rows5 = Math.floor(paperHeight / toleranceH);
+            const total5 = cols5 * rows5;
+            
+            const placements = {
+                orientation1: {
+                    cols: cols1, rows: rows1, total: total1,
+                    rectW: rectWidth, rectH: rectHeight,
+                    name: `${rectWidth}×${rectHeight}mm rectangles`
+                },
+                orientation2: {
+                    cols: cols2, rows: rows2, total: total2,
+                    rectW: rectHeight, rectH: rectWidth,
+                    name: `${rectHeight}×${rectWidth}mm rectangles (rotated)`
+                },
+                orientation3: {
+                    cols: cols3, rows: rows3, total: total3,
+                    rectW: rectWidth, rectH: toleranceH,
+                    name: `${rectWidth}×${toleranceH.toFixed(1)}mm rectangles (height tolerance)`
+                },
+                orientation4: {
+                    cols: cols4, rows: rows4, total: total4,
+                    rectW: toleranceW, rectH: rectHeight,
+                    name: `${toleranceW.toFixed(1)}×${rectHeight}mm rectangles (width tolerance)`
+                },
+                orientation5: {
+                    cols: cols5, rows: rows5, total: total5,
+                    rectW: toleranceW, rectH: toleranceH,
+                    name: `${toleranceW.toFixed(1)}×${toleranceH.toFixed(1)}mm rectangles (both tolerances)`
+                }
             };
             
-            const placement2 = {
-                cols: cols2,
-                rows: rows2,
-                total: total2,
-                rectW: rectHeight,
-                rectH: rectWidth,
-                name: `${rectHeight}×${rectWidth}mm rectangles (rotated)`
-            };
+            // Calculate waste reduction for all orientations
+            Object.keys(placements).forEach(key => {
+                const placement = placements[key];
+                const wasteRects = calculateWasteReduction(paperWidth, paperHeight, placement, rectWidth, rectHeight);
+                placement.wasteRects = wasteRects;
+                placement.wasteTotal = wasteRects.reduce((sum, rect) => sum + rect.total, 0);
+                placement.totalWithWaste = placement.total + placement.wasteTotal;
+            });
             
-            // Calculate waste reduction for both orientations
-            const wasteRects1 = calculateWasteReduction(paperWidth, paperHeight, placement1, rectWidth, rectHeight);
-            const wasteRects2 = calculateWasteReduction(paperWidth, paperHeight, placement2, rectWidth, rectHeight);
-            
-            placement1.wasteRects = wasteRects1;
-            placement2.wasteRects = wasteRects2;
-            placement1.wasteTotal = wasteRects1.reduce((sum, rect) => sum + rect.total, 0);
-            placement2.wasteTotal = wasteRects2.reduce((sum, rect) => sum + rect.total, 0);
-            placement1.totalWithWaste = total1 + placement1.wasteTotal;
-            placement2.totalWithWaste = total2 + placement2.wasteTotal;
-            
-            return {
-                orientation1: placement1,
-                orientation2: placement2
-            };
+            return placements;
         }
 
         function drawDiagram(canvas, paperWidth, paperHeight, placement) {
@@ -840,8 +866,18 @@
             const placements = calculatePlacements(paperWidth, paperHeight, rectWidth, rectHeight);
             
             // Determine best orientation based on total including waste reduction
-            const bestOrientation = placements.orientation1.totalWithWaste >= placements.orientation2.totalWithWaste ? 1 : 2;
-            const bestPlacement = bestOrientation === 1 ? placements.orientation1 : placements.orientation2;
+            let bestOrientation = 1;
+            let bestPlacement = placements.orientation1;
+            let maxTotal = placements.orientation1.totalWithWaste;
+
+            for (let i = 2; i <= 5; i++) {
+                const placement = placements[`orientation${i}`];
+                if (placement.totalWithWaste > maxTotal) {
+                    maxTotal = placement.totalWithWaste;
+                    bestOrientation = i;
+                    bestPlacement = placement;
+                }
+            }
             
             // Calculate efficiency for best option
             const totalPaperArea = paperWidth * paperHeight;
@@ -887,7 +923,7 @@
             // Update diagrams
             const diagramsHTML = `
                 <div class="diagram">
-                    <h3>${placements.orientation1.name}</h3>
+                    <h3>1. ${placements.orientation1.name}</h3>
                     <div class="canvas-container">
                         <canvas id="canvas1"></canvas>
                     </div>
@@ -898,7 +934,7 @@
                     </div>
                 </div>
                 <div class="diagram">
-                    <h3>${placements.orientation2.name}</h3>
+                    <h3>2. ${placements.orientation2.name}</h3>
                     <div class="canvas-container">
                         <canvas id="canvas2"></canvas>
                     </div>
@@ -908,13 +944,48 @@
                         <strong>Total: ${placements.orientation2.totalWithWaste} rectangles</strong>
                     </div>
                 </div>
+                <div class="diagram">
+                    <h3>3. ${placements.orientation3.name}</h3>
+                    <div class="canvas-container">
+                        <canvas id="canvas3"></canvas>
+                    </div>
+                    <div class="diagram-info">
+                        Main: ${placements.orientation3.cols} × ${placements.orientation3.rows} = ${placements.orientation3.total}<br>
+                        Waste-reduced: ${placements.orientation3.wasteTotal}<br>
+                        <strong>Total: ${placements.orientation3.totalWithWaste} rectangles</strong>
+                    </div>
+                </div>
+                <div class="diagram">
+                    <h3>4. ${placements.orientation4.name}</h3>
+                    <div class="canvas-container">
+                        <canvas id="canvas4"></canvas>
+                    </div>
+                    <div class="diagram-info">
+                        Main: ${placements.orientation4.cols} × ${placements.orientation4.rows} = ${placements.orientation4.total}<br>
+                        Waste-reduced: ${placements.orientation4.wasteTotal}<br>
+                        <strong>Total: ${placements.orientation4.totalWithWaste} rectangles</strong>
+                    </div>
+                </div>
+                <div class="diagram">
+                    <h3>5. ${placements.orientation5.name}</h3>
+                    <div class="canvas-container">
+                        <canvas id="canvas5"></canvas>
+                    </div>
+                    <div class="diagram-info">
+                        Main: ${placements.orientation5.cols} × ${placements.orientation5.rows} = ${placements.orientation5.total}<br>
+                        Waste-reduced: ${placements.orientation5.wasteTotal}<br>
+                        <strong>Total: ${placements.orientation5.totalWithWaste} rectangles</strong>
+                    </div>
+                </div>
             `;
             
             document.getElementById('diagramContainer').innerHTML = diagramsHTML;
             
             // Draw diagrams
-            const canvas1 = document.getElementById('canvas1');
-            const canvas2 = document.getElementById('canvas2');
+            for (let i = 1; i <= 5; i++) {
+                const canvas = document.getElementById(`canvas${i}`);
+                drawDiagram(canvas, paperWidth, paperHeight, placements[`orientation${i}`]);
+            }
             
             drawDiagram(canvas1, paperWidth, paperHeight, placements.orientation1);
             drawDiagram(canvas2, paperWidth, paperHeight, placements.orientation2);
