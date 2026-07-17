@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,7 +24,7 @@
             margin: 0 auto;
             background: white;
             border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
@@ -37,7 +38,7 @@
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .header p {
@@ -122,7 +123,7 @@
 
         .toggle-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .preset-section {
@@ -242,7 +243,7 @@
             border: 2px solid #e5e7eb;
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .diagram h3 {
@@ -316,7 +317,7 @@
             border-radius: 999px;
             padding: 3px;
             gap: 2px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.12);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.12);
         }
 
         .unit-pill button {
@@ -335,7 +336,7 @@
         .unit-pill button.active {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             color: white;
-            box-shadow: 0 2px 8px rgba(79,172,254,0.35);
+            box-shadow: 0 2px 8px rgba(79, 172, 254, 0.35);
         }
 
         @media (max-width: 1024px) {
@@ -348,27 +349,28 @@
             .input-section {
                 grid-template-columns: 1fr;
             }
-            
+
             .diagram-container {
                 grid-template-columns: 1fr;
             }
-            
+
             .header h1 {
                 font-size: 2em;
             }
-            
+
             .content {
                 padding: 20px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <img src="logo.png" alt="Company Logo" style="height: 100px; margin-bottom: 10px;">
         </div>
-        
+
         <div class="content">
             <!-- Unit Toggle -->
             <div class="unit-toggle-wrap">
@@ -405,7 +407,7 @@
                         <input type="number" id="paperHeight" value="1400" step="0.1" min="0.001">
                     </div>
                 </div>
-                
+
                 <div class="input-group">
                     <h3 id="rectDimTitle">Rectangle Dimensions (mm)</h3>
                     <div class="form-group">
@@ -438,13 +440,13 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="diagrams-section">
                 <div class="diagram-container" id="diagramContainer">
                     <!-- Diagrams will be populated by JavaScript -->
                 </div>
             </div>
-            
+
             <div class="legend">
                 <div class="legend-item">
                     <div class="legend-color" style="background: white; border: 2px solid black;"></div>
@@ -463,13 +465,13 @@
                     <span>Remaining Waste</span>
                 </div>
             </div>
-            
-            
+
+
 
             <div class="results-section" id="resultsSection">
                 <!-- Results will be populated by JavaScript -->
             </div>
-            
+
             <div id="recommendationSection">
                 <!-- Recommendation will be populated by JavaScript -->
             </div>
@@ -502,7 +504,7 @@
 
             // Convert all current input values to the new unit
             const fieldIds = ['paperWidth', 'paperHeight', 'rectWidth', 'rectHeight',
-                              'widthToleranceValue', 'heightToleranceValue'];
+                'widthToleranceValue', 'heightToleranceValue'];
 
             fieldIds.forEach(id => {
                 const el = document.getElementById(id);
@@ -510,7 +512,7 @@
                 if (!isNaN(val)) {
                     const inMM = unit === 'in' ? val : val * MM_PER_IN;  // current value → mm
                     const newVal = unit === 'in' ? inMM / MM_PER_IN      // mm → in
-                                               : inMM;                    // stay mm
+                        : inMM;                    // stay mm
                     // If switching FROM mm TO in: val is in mm
                     // If switching FROM in TO mm: val is in in
                     const converted = unit === 'in'
@@ -528,22 +530,22 @@
 
             // Update all unit labels
             const u = unitLabel();
-            document.getElementById('paperDimTitle').textContent  = `Paper Dimensions (${u})`;
-            document.getElementById('rectDimTitle').textContent   = `Rectangle Dimensions (${u})`;
-            document.getElementById('labelPaperWidth').textContent  = `Paper Width (${u})`;
+            document.getElementById('paperDimTitle').textContent = `Paper Dimensions (${u})`;
+            document.getElementById('rectDimTitle').textContent = `Rectangle Dimensions (${u})`;
+            document.getElementById('labelPaperWidth').textContent = `Paper Width (${u})`;
             document.getElementById('labelPaperHeight').textContent = `Paper Height (${u})`;
-            document.getElementById('labelRectWidth').textContent   = `Rectangle Width (${u})`;
-            document.getElementById('labelRectHeight').textContent  = `Rectangle Height (${u})`;
-            document.getElementById('labelWidthMargin').textContent  = `Width Margin (${u})`;
+            document.getElementById('labelRectWidth').textContent = `Rectangle Width (${u})`;
+            document.getElementById('labelRectHeight').textContent = `Rectangle Height (${u})`;
+            document.getElementById('labelWidthMargin').textContent = `Width Margin (${u})`;
             document.getElementById('labelHeightMargin').textContent = `Height Margin (${u})`;
 
             // Adjust step size
             const dimensionStep = unit === 'in' ? '0.001' : '0.1';
-            const marginStep    = unit === 'in' ? '0.001' : '0.1';
-            ['paperWidth','paperHeight','rectWidth','rectHeight'].forEach(id => {
+            const marginStep = unit === 'in' ? '0.001' : '0.1';
+            ['paperWidth', 'paperHeight', 'rectWidth', 'rectHeight'].forEach(id => {
                 document.getElementById(id).step = dimensionStep;
             });
-            ['widthToleranceValue','heightToleranceValue'].forEach(id => {
+            ['widthToleranceValue', 'heightToleranceValue'].forEach(id => {
                 document.getElementById(id).step = marginStep;
             });
 
@@ -568,31 +570,36 @@
 
         function loadPreset(paperW, paperH, rectW, rectH) {
             // Preset values are always in mm — convert to current unit before setting
-            document.getElementById('paperWidth').value  = parseFloat(fromMM(paperW).toFixed(currentUnit === 'in' ? 4 : 2));
+            document.getElementById('paperWidth').value = parseFloat(fromMM(paperW).toFixed(currentUnit === 'in' ? 4 : 2));
             document.getElementById('paperHeight').value = parseFloat(fromMM(paperH).toFixed(currentUnit === 'in' ? 4 : 2));
-            document.getElementById('rectWidth').value   = parseFloat(fromMM(rectW).toFixed(currentUnit === 'in' ? 4 : 2));
-            document.getElementById('rectHeight').value  = parseFloat(fromMM(rectH).toFixed(currentUnit === 'in' ? 4 : 2));
+            document.getElementById('rectWidth').value = parseFloat(fromMM(rectW).toFixed(currentUnit === 'in' ? 4 : 2));
+            document.getElementById('rectHeight').value = parseFloat(fromMM(rectH).toFixed(currentUnit === 'in' ? 4 : 2));
             updateResults();
+        }
+
+        // Safe floor helper used in waste reduction too
+        function safeFloor(dividend, divisor) {
+            return (divisor > 0 && isFinite(dividend / divisor)) ? Math.floor(dividend / divisor) : 0;
         }
 
         function calculateWasteReduction(paperWidth, paperHeight, mainLayout, actualRectWidth, actualRectHeight) {
             const wasteRects = [];
-            
+
             // Calculate initial waste areas from main layout
             const usedWidth = mainLayout.cols * mainLayout.rectW;
             const usedHeight = mainLayout.rows * mainLayout.rectH;
-            
+
             // Try to fit rectangles in RIGHT waste area
             const rightWaste = paperWidth - usedWidth;
             if (rightWaste > 0) {
                 let bestRightLayout = null;
                 let bestRightTotal = 0;
-                
+
                 // Try original orientation
-                const rightCols = Math.floor(rightWaste / actualRectWidth);
-                const rightRows = Math.floor(paperHeight / actualRectHeight); // Use full paper height
+                const rightCols = safeFloor(rightWaste, actualRectWidth);
+                const rightRows = safeFloor(paperHeight, actualRectHeight);
                 const rightTotal = rightCols * rightRows;
-                
+
                 if (rightTotal > bestRightTotal) {
                     bestRightTotal = rightTotal;
                     bestRightLayout = {
@@ -606,12 +613,12 @@
                         total: rightTotal
                     };
                 }
-                
+
                 // Try rotated orientation
-                const rightColsRot = Math.floor(rightWaste / actualRectHeight);
-                const rightRowsRot = Math.floor(paperHeight / actualRectWidth); // Use full paper height
+                const rightColsRot = safeFloor(rightWaste, actualRectHeight);
+                const rightRowsRot = safeFloor(paperHeight, actualRectWidth);
                 const rightTotalRot = rightColsRot * rightRowsRot;
-                
+
                 if (rightTotalRot > bestRightTotal) {
                     bestRightTotal = rightTotalRot;
                     bestRightLayout = {
@@ -625,27 +632,27 @@
                         total: rightTotalRot
                     };
                 }
-                
+
                 if (bestRightLayout) {
                     wasteRects.push(bestRightLayout);
                 }
             }
-            
+
             // Try to fit rectangles in BOTTOM waste area
             const bottomWaste = paperHeight - usedHeight;
             if (bottomWaste > 0) {
                 let bestBottomLayout = null;
                 let bestBottomTotal = 0;
-                
+
                 // Calculate available width (considering right waste area usage)
                 // Always use full paper width and height for waste areas
                 let availableWidth = paperWidth;
 
                 // Try original orientation
-                const bottomCols = Math.floor(availableWidth / actualRectWidth);
-                const bottomRows = Math.floor(bottomWaste / actualRectHeight);
+                const bottomCols = safeFloor(availableWidth, actualRectWidth);
+                const bottomRows = safeFloor(bottomWaste, actualRectHeight);
                 const bottomTotal = bottomCols * bottomRows;
-                
+
                 if (bottomTotal > bestBottomTotal) {
                     bestBottomTotal = bottomTotal;
                     bestBottomLayout = {
@@ -659,12 +666,12 @@
                         total: bottomTotal
                     };
                 }
-                
+
                 // Try rotated orientation
-                const bottomColsRot = Math.floor(availableWidth / actualRectHeight);
-                const bottomRowsRot = Math.floor(bottomWaste / actualRectWidth);
+                const bottomColsRot = safeFloor(availableWidth, actualRectHeight);
+                const bottomRowsRot = safeFloor(bottomWaste, actualRectWidth);
                 const bottomTotalRot = bottomColsRot * bottomRowsRot;
-                
+
                 if (bottomTotalRot > bestBottomTotal) {
                     bestBottomTotal = bottomTotalRot;
                     bestBottomLayout = {
@@ -678,49 +685,54 @@
                         total: bottomTotalRot
                     };
                 }
-                
+
                 if (bestBottomLayout) {
                     wasteRects.push(bestBottomLayout);
                 }
             }
-            
+
             return wasteRects;
         }
 
         function calculatePlacements(paperWidth, paperHeight, rectWidth, rectHeight) {
             // All values arrive in mm (already converted from current unit in updateResults)
-            const widthToleranceValue  = toMM(parseFloat(document.getElementById('widthToleranceValue').value));
-            const heightToleranceValue = toMM(parseFloat(document.getElementById('heightToleranceValue').value));
-            
+            const rawWidthTol = toMM(parseFloat(document.getElementById('widthToleranceValue').value) || 0);
+            const rawHeightTol = toMM(parseFloat(document.getElementById('heightToleranceValue').value) || 0);
+
             const u = unitLabel(); // 'mm' or 'in'
             const dp = currentUnit === 'in' ? 4 : 1; // decimal places for display
 
             // Helper to format a mm value back to display unit
             const fmt = v => fromMM(v).toFixed(dp);
 
+            // Safe floor: returns 0 if divisor is zero or negative (prevents Infinity / hang)
+            const safeFloor = (dividend, divisor) =>
+                (divisor > 0 && isFinite(dividend / divisor)) ? Math.floor(dividend / divisor) : 0;
+
             // Original orientations (layouts 1 & 2)
-            const cols1 = Math.floor(paperWidth / rectWidth);
-            const rows1 = Math.floor(paperHeight / rectHeight);
+            const cols1 = safeFloor(paperWidth, rectWidth);
+            const rows1 = safeFloor(paperHeight, rectHeight);
             const total1 = cols1 * rows1;
-            
-            const cols2 = Math.floor(paperWidth / rectHeight);
-            const rows2 = Math.floor(paperHeight / rectWidth);
+
+            const cols2 = safeFloor(paperWidth, rectHeight);
+            const rows2 = safeFloor(paperHeight, rectWidth);
             const total2 = cols2 * rows2;
-            
+
             // New tolerance layouts (layouts 3 & 4)
-            const toleranceH = rectHeight - heightToleranceValue;
-            const toleranceW = rectWidth  - widthToleranceValue;
+            // Clamp so toleranceW/H are always at least 0.001 mm — prevents zero/negative divisor
+            const toleranceH = Math.max(rectHeight - rawHeightTol, 0.001);
+            const toleranceW = Math.max(rectWidth - rawWidthTol, 0.001);
 
             // Layout 3: Same as layout 1 but with enabled tolerances applied
-            const cols3 = Math.floor(paperWidth / (widthTolerance ? toleranceW : rectWidth));
-            const rows3 = Math.floor(paperHeight / (heightTolerance ? toleranceH : rectHeight));
+            const cols3 = safeFloor(paperWidth, widthTolerance ? toleranceW : rectWidth);
+            const rows3 = safeFloor(paperHeight, heightTolerance ? toleranceH : rectHeight);
             const total3 = cols3 * rows3;
 
             // Layout 4: Same as layout 2 but with enabled tolerances applied
-            const cols4 = Math.floor(paperWidth / (heightTolerance ? toleranceH : rectHeight));
-            const rows4 = Math.floor(paperHeight / (widthTolerance ? toleranceW : rectWidth));
+            const cols4 = safeFloor(paperWidth, heightTolerance ? toleranceH : rectHeight);
+            const rows4 = safeFloor(paperHeight, widthTolerance ? toleranceW : rectWidth);
             const total4 = cols4 * rows4;
-            
+
             const placements = {
                 orientation1: {
                     cols: cols1, rows: rows1, total: total1,
@@ -734,18 +746,18 @@
                 },
                 orientation3: {
                     cols: cols3, rows: rows3, total: total3,
-                    rectW: widthTolerance ? toleranceW : rectWidth, 
+                    rectW: widthTolerance ? toleranceW : rectWidth,
                     rectH: heightTolerance ? toleranceH : rectHeight,
                     name: `Margin: ${fmt(widthTolerance ? toleranceW : rectWidth)}×${fmt(heightTolerance ? toleranceH : rectHeight)}${u}`
                 },
                 orientation4: {
                     cols: cols4, rows: rows4, total: total4,
-                    rectW: heightTolerance ? toleranceH : rectHeight, 
+                    rectW: heightTolerance ? toleranceH : rectHeight,
                     rectH: widthTolerance ? toleranceW : rectWidth,
                     name: `Margin: ${fmt(heightTolerance ? toleranceH : rectHeight)}×${fmt(widthTolerance ? toleranceW : rectWidth)}${u} (rotated)`
                 }
             };
-            
+
             // Calculate waste reduction for all orientations
             Object.keys(placements).forEach(key => {
                 const placement = placements[key];
@@ -755,7 +767,7 @@
                 placement.wasteTotal = wasteRects.reduce((sum, rect) => sum + rect.total, 0);
                 placement.totalWithWaste = placement.total + placement.wasteTotal;
             });
-            
+
             return placements;
         }
 
@@ -763,101 +775,130 @@
             const ctx = canvas.getContext('2d');
             const canvasWidth = 350;
             const canvasHeight = 250;
-            
+
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
-            
+
             // Calculate scale
             const scaleX = (canvasWidth - 40) / paperWidth;
             const scaleY = (canvasHeight - 40) / paperHeight;
             const scale = Math.min(scaleX, scaleY);
-            
+
             const paperW = paperWidth * scale;
             const paperH = paperHeight * scale;
             const offsetX = (canvasWidth - paperW) / 2;
             const offsetY = (canvasHeight - paperH) / 2;
-            
+
             // Clear canvas
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-            
+
             // Draw paper background
             ctx.fillStyle = 'white';
             ctx.fillRect(offsetX, offsetY, paperW, paperH);
             ctx.strokeStyle = 'black';
             ctx.lineWidth = 2;
             ctx.strokeRect(offsetX, offsetY, paperW, paperH);
-            
+
             // Draw main rectangles
             const rectW = placement.rectW * scale;
             const rectH = placement.rectH * scale;
-            
+
             ctx.strokeStyle = 'black';
             ctx.lineWidth = 1;
-            
-            for (let row = 0; row < placement.rows; row++) {
-                for (let col = 0; col < placement.cols; col++) {
-                    const x = offsetX + col * rectW;
-                    const y = offsetY + row * rectH;
-                    ctx.strokeRect(x, y, rectW, rectH);
+
+            const totalMainRects = placement.rows * placement.cols;
+            if (totalMainRects > 0 && totalMainRects <= 2000) {
+                // Draw individual rectangles
+                for (let row = 0; row < placement.rows; row++) {
+                    for (let col = 0; col < placement.cols; col++) {
+                        const x = offsetX + col * rectW;
+                        const y = offsetY + row * rectH;
+                        ctx.strokeRect(x, y, rectW, rectH);
+                    }
                 }
+            } else if (totalMainRects > 2000) {
+                // Too many to draw individually — fill the used area and show a label
+                const usedW = placement.cols * rectW;
+                const usedH = placement.rows * rectH;
+                ctx.fillStyle = 'rgba(79,172,254,0.15)';
+                ctx.fillRect(offsetX, offsetY, usedW, usedH);
+                ctx.strokeRect(offsetX, offsetY, usedW, usedH);
+                ctx.fillStyle = '#374151';
+                ctx.font = 'bold 11px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(`${placement.cols}×${placement.rows} = ${totalMainRects}`, offsetX + usedW / 2, offsetY + usedH / 2);
             }
-            
+
             // Draw waste-reducing rectangles (green ones only)
             placement.wasteRects.forEach(wasteRect => {
                 const wasteRectW = wasteRect.rectW * scale;
                 const wasteRectH = wasteRect.rectH * scale;
                 const startX = offsetX + wasteRect.x * scale;
                 const startY = offsetY + wasteRect.y * scale;
-                
+
                 ctx.fillStyle = '#10b981';
                 ctx.strokeStyle = '#065f46';
                 ctx.lineWidth = 1;
-                
-                for (let row = 0; row < wasteRect.rows; row++) {
-                    for (let col = 0; col < wasteRect.cols; col++) {
-                        const x = startX + col * wasteRectW;
-                        const y = startY + row * wasteRectH;
-                        ctx.fillRect(x, y, wasteRectW, wasteRectH);
-                        ctx.strokeRect(x, y, wasteRectW, wasteRectH);
+
+                const totalWaste = wasteRect.rows * wasteRect.cols;
+                if (totalWaste > 0 && totalWaste <= 2000) {
+                    for (let row = 0; row < wasteRect.rows; row++) {
+                        for (let col = 0; col < wasteRect.cols; col++) {
+                            const x = startX + col * wasteRectW;
+                            const y = startY + row * wasteRectH;
+                            ctx.fillRect(x, y, wasteRectW, wasteRectH);
+                            ctx.strokeRect(x, y, wasteRectW, wasteRectH);
+                        }
                     }
+                } else if (totalWaste > 2000) {
+                    const usedW = wasteRect.cols * wasteRectW;
+                    const usedH = wasteRect.rows * wasteRectH;
+                    ctx.fillRect(startX, startY, usedW, usedH);
+                    ctx.strokeRect(startX, startY, usedW, usedH);
+                    ctx.fillStyle = '#065f46';
+                    ctx.font = 'bold 10px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(`${wasteRect.cols}×${wasteRect.rows} = ${totalWaste}`, startX + usedW / 2, startY + usedH / 2);
                 }
             });
-            
+
             // Calculate actual used areas
             const usedWidth = placement.cols * placement.rectW;
             const usedHeight = placement.rows * placement.rectH;
-            
+
             // Calculate actual space used by waste rectangles
             let maxRightEdge = usedWidth;
             let maxBottomEdge = usedHeight;
-            
+
             placement.wasteRects.forEach(wasteRect => {
                 const wasteRightEdge = wasteRect.x + (wasteRect.cols * wasteRect.rectW);
                 const wasteBottomEdge = wasteRect.y + (wasteRect.rows * wasteRect.rectH);
                 maxRightEdge = Math.max(maxRightEdge, wasteRightEdge);
                 maxBottomEdge = Math.max(maxBottomEdge, wasteBottomEdge);
             });
-            
+
             // Draw TWO lines from paper center edges - one to main rectangles, one to waste rectangles
             ctx.strokeStyle = '#ff6b6b';
             ctx.lineWidth = 2;
             ctx.setLineDash([5, 5]);
-            
+
             // Paper center points on edges
             const paperCenterX = offsetX + paperW / 2;
             const paperCenterY = offsetY + paperH / 2;
-            
+
             // RIGHT EDGE - Two lines
             const rightEdgeX = offsetX + paperW;
             const rightEdgeY = paperCenterY;
-            
+
             // Line to main rectangles (normal boxes)
             const mainRightEdge = offsetX + usedWidth * scale;
             ctx.beginPath();
             ctx.moveTo(rightEdgeX, rightEdgeY - 10); // Offset up a bit
             ctx.lineTo(mainRightEdge, rightEdgeY - 10);
             ctx.stroke();
-            
+
             // Line to waste rectangles (green boxes) if they exist
             if (maxRightEdge > usedWidth) {
                 const wasteRightEdge = offsetX + maxRightEdge * scale;
@@ -866,18 +907,18 @@
                 ctx.lineTo(wasteRightEdge, rightEdgeY + 10);
                 ctx.stroke();
             }
-            
+
             // BOTTOM EDGE - Two lines
             const bottomEdgeX = paperCenterX;
             const bottomEdgeY = offsetY + paperH;
-            
+
             // Line to main rectangles (normal boxes)
             const mainBottomEdge = offsetY + usedHeight * scale;
             ctx.beginPath();
             ctx.moveTo(bottomEdgeX - 10, bottomEdgeY); // Offset left a bit
             ctx.lineTo(bottomEdgeX - 10, mainBottomEdge);
             ctx.stroke();
-            
+
             // Line to waste rectangles (green boxes) if they exist
             if (maxBottomEdge > usedHeight) {
                 const wasteBottomEdge = offsetY + maxBottomEdge * scale;
@@ -886,7 +927,7 @@
                 ctx.lineTo(bottomEdgeX + 10, wasteBottomEdge);
                 ctx.stroke();
             }
-            
+
             // Add length labels for right lines
             const mainRightDistance = Math.abs(rightEdgeX - mainRightEdge) / scale;
             if (mainRightDistance > 0) {
@@ -899,7 +940,7 @@
                 ctx.fillText(`${fromMM(mainRightDistance).toFixed(currentUnit === 'in' ? 4 : 1)}`, 0, 0);
                 ctx.restore();
             }
-            
+
             if (maxRightEdge > usedWidth) {
                 const wasteRightDistance = Math.abs(rightEdgeX - (offsetX + maxRightEdge * scale)) / scale;
                 if (wasteRightDistance > 0) {
@@ -922,7 +963,7 @@
                 ctx.textAlign = 'center';
                 ctx.fillText(`${fromMM(mainBottomDistance).toFixed(currentUnit === 'in' ? 4 : 1)}`, bottomEdgeX - 30, (bottomEdgeY + mainBottomEdge) / 2);
             }
-            
+
             if (maxBottomEdge > usedHeight) {
                 const wasteBottomDistance = Math.abs(bottomEdgeY - (offsetY + maxBottomEdge * scale)) / scale;
                 if (wasteBottomDistance > 0) {
@@ -932,7 +973,7 @@
                     ctx.fillText(`${fromMM(wasteBottomDistance).toFixed(currentUnit === 'in' ? 4 : 1)}`, bottomEdgeX + 30, (bottomEdgeY + offsetY + maxBottomEdge * scale) / 2);
                 }
             }
-            
+
             // Reset line dash
             ctx.setLineDash([]);
 
@@ -959,13 +1000,13 @@
             if (placement.rows > 0 && placement.cols > 0) {
                 const firstRectW = rectW;
                 const firstRectH = rectH;
-                
+
                 // First rectangle width (bottom edge of first rectangle)
                 const rectWidthLabelX = offsetX + firstRectW / 2;
                 const rectWidthLabelY = offsetY + firstRectH + 15;
                 ctx.fillStyle = 'red';
                 ctx.fillText(`${fromMM(placement.rectW).toFixed(currentUnit === 'in' ? 4 : 1)}`, rectWidthLabelX, rectWidthLabelY);
-                
+
                 // First rectangle height (right edge of first rectangle)
                 ctx.save();
                 ctx.translate(offsetX + firstRectW + 15, offsetY + firstRectH / 2);
@@ -981,14 +1022,14 @@
                     const wasteRectH = wasteRect.rectH * scale;
                     const startX = offsetX + wasteRect.x * scale;
                     const startY = offsetY + wasteRect.y * scale;
-                    
+
                     ctx.fillStyle = 'black';
-                    
+
                     // Width dimension (bottom edge of first waste rectangle)
                     const wasteWidthLabelX = startX + wasteRectW / 2;
                     const wasteWidthLabelY = startY + wasteRectH + 15;
                     ctx.fillText(`${fromMM(wasteRect.rectW).toFixed(currentUnit === 'in' ? 4 : 1)}`, wasteWidthLabelX, wasteWidthLabelY);
-                    
+
                     // Height dimension (right edge of first waste rectangle)
                     ctx.save();
                     ctx.translate(startX + wasteRectW + 15, startY + wasteRectH / 2);
@@ -1001,15 +1042,15 @@
 
         function updateResults() {
             // Always compute in mm; convert from current unit if needed
-            const paperWidth  = toMM(parseFloat(document.getElementById('paperWidth').value));
+            const paperWidth = toMM(parseFloat(document.getElementById('paperWidth').value));
             const paperHeight = toMM(parseFloat(document.getElementById('paperHeight').value));
-            const rectWidth   = toMM(parseFloat(document.getElementById('rectWidth').value));
-            const rectHeight  = toMM(parseFloat(document.getElementById('rectHeight').value));
-            
+            const rectWidth = toMM(parseFloat(document.getElementById('rectWidth').value));
+            const rectHeight = toMM(parseFloat(document.getElementById('rectHeight').value));
+
             if (!paperWidth || !paperHeight || !rectWidth || !rectHeight) return;
-            
+
             const placements = calculatePlacements(paperWidth, paperHeight, rectWidth, rectHeight);
-            
+
             // Determine best orientation based on total including waste reduction
             let bestOrientation = 1;
             let bestPlacement = placements.orientation1;
@@ -1023,15 +1064,15 @@
                     bestPlacement = placement;
                 }
             }
-            
+
             // Calculate efficiency for best option (only counting actual rectangles, no waste areas)
             const totalPaperArea = paperWidth * paperHeight;
             const mainUsedArea = bestPlacement.total * bestPlacement.rectW * bestPlacement.rectH;
-            const wasteUsedArea = bestPlacement.wasteRects.reduce((sum, rect) => 
+            const wasteUsedArea = bestPlacement.wasteRects.reduce((sum, rect) =>
                 sum + (rect.total * rect.rectW * rect.rectH), 0);
             const totalUsedArea = mainUsedArea + wasteUsedArea;
             const efficiency = ((totalUsedArea / totalPaperArea) * 100).toFixed(1);
-            
+
             // Update results section
             const resultsHTML = `
                 <div class="metric-card">
@@ -1040,9 +1081,9 @@
                     <div class="subtext">Total area utilization</div>
                 </div>
             `;
-            
+
             document.getElementById('resultsSection').innerHTML = resultsHTML;
-            
+
             // Get tolerance values for margin display
             const widthToleranceValue = parseFloat(document.getElementById('widthToleranceValue').value);
             const heightToleranceValue = parseFloat(document.getElementById('heightToleranceValue').value);
@@ -1095,10 +1136,10 @@
                     </div>
                 </div>
             `;
-            
-            
+
+
             document.getElementById('diagramContainer').innerHTML = diagramsHTML;
-            
+
             // Draw diagrams
             for (let i = 1; i <= 4; i++) {
                 const canvas = document.getElementById(`canvas${i}`);
@@ -1110,15 +1151,24 @@
         }
 
         // Add event listeners
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const inputs = ['paperWidth', 'paperHeight', 'rectWidth', 'rectHeight', 'widthToleranceValue', 'heightToleranceValue'];
+
+            // Debounce: only recalculate 400ms after the user stops typing
+            let debounceTimer = null;
+            function debouncedUpdate() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(updateResults, 400);
+            }
+
             inputs.forEach(id => {
-                document.getElementById(id).addEventListener('input', updateResults);
+                document.getElementById(id).addEventListener('input', debouncedUpdate);
             });
-            
+
             // Initial calculation
             updateResults();
         });
     </script>
 </body>
+
 </html>
