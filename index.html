@@ -293,6 +293,51 @@
             border-radius: 3px;
         }
 
+        /* ── Unit Toggle ── */
+        .unit-toggle-wrap {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .unit-toggle-label {
+            font-size: 0.85em;
+            font-weight: 700;
+            color: #6b7280;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .unit-pill {
+            display: flex;
+            background: #e5e7eb;
+            border-radius: 999px;
+            padding: 3px;
+            gap: 2px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.12);
+        }
+
+        .unit-pill button {
+            border: none;
+            background: transparent;
+            border-radius: 999px;
+            padding: 6px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #6b7280;
+            transition: all 0.2s ease;
+            letter-spacing: 0.04em;
+        }
+
+        .unit-pill button.active {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(79,172,254,0.35);
+        }
+
         @media (max-width: 1024px) {
             .input-section {
                 grid-template-columns: 1fr 1fr;
@@ -325,6 +370,15 @@
         </div>
         
         <div class="content">
+            <!-- Unit Toggle -->
+            <div class="unit-toggle-wrap">
+                <span class="unit-toggle-label">Units</span>
+                <div class="unit-pill">
+                    <button id="unitMM" class="active" onclick="setUnit('mm')">MM</button>
+                    <button id="unitIN" onclick="setUnit('in')">In</button>
+                </div>
+            </div>
+
             <div class="preset-section">
                 <div class="preset-buttons">
                     <button class="preset-button" onclick="loadPreset(2000, 1400, 360, 325)">
@@ -341,26 +395,26 @@
 
             <div class="input-section">
                 <div class="input-group">
-                    <h3>Paper Dimensions (mm)</h3>
+                    <h3 id="paperDimTitle">Paper Dimensions (mm)</h3>
                     <div class="form-group">
-                        <label for="paperWidth">Paper Width (mm)</label>
-                        <input type="number" id="paperWidth" value="2000" step="0.1" min="1">
+                        <label for="paperWidth" id="labelPaperWidth">Paper Width (mm)</label>
+                        <input type="number" id="paperWidth" value="2000" step="0.1" min="0.001">
                     </div>
                     <div class="form-group">
-                        <label for="paperHeight">Paper Height (mm)</label>
-                        <input type="number" id="paperHeight" value="1400" step="0.1" min="1">
+                        <label for="paperHeight" id="labelPaperHeight">Paper Height (mm)</label>
+                        <input type="number" id="paperHeight" value="1400" step="0.1" min="0.001">
                     </div>
                 </div>
                 
                 <div class="input-group">
-                    <h3>Rectangle Dimensions (mm)</h3>
+                    <h3 id="rectDimTitle">Rectangle Dimensions (mm)</h3>
                     <div class="form-group">
-                        <label for="rectWidth">Rectangle Width (mm)</label>
-                        <input type="number" id="rectWidth" value="360.0" step="0.1" min="1">
+                        <label for="rectWidth" id="labelRectWidth">Rectangle Width (mm)</label>
+                        <input type="number" id="rectWidth" value="360.0" step="0.1" min="0.001">
                     </div>
                     <div class="form-group">
-                        <label for="rectHeight">Rectangle Height (mm)</label>
-                        <input type="number" id="rectHeight" value="325.0" step="0.1" min="1">
+                        <label for="rectHeight" id="labelRectHeight">Rectangle Height (mm)</label>
+                        <input type="number" id="rectHeight" value="325.0" step="0.1" min="0.001">
                     </div>
                 </div>
 
@@ -374,12 +428,12 @@
                             ✓ Height Tolerance
                         </button>
                         <div class="form-group">
-                            <label for="widthToleranceValue">Width Margin (mm)</label>
-                            <input type="number" id="widthToleranceValue" value="5" step="0.5" min="0" max="50">
+                            <label for="widthToleranceValue" id="labelWidthMargin">Width Margin (mm)</label>
+                            <input type="number" id="widthToleranceValue" value="5" step="0.1" min="0" max="500">
                         </div>
                         <div class="form-group">
-                            <label for="heightToleranceValue">Height Margin (mm)</label>
-                            <input type="number" id="heightToleranceValue" value="5" step="0.5" min="0" max="50">
+                            <label for="heightToleranceValue" id="labelHeightMargin">Height Margin (mm)</label>
+                            <input type="number" id="heightToleranceValue" value="5" step="0.1" min="0" max="500">
                         </div>
                     </div>
                 </div>
@@ -427,6 +481,76 @@
         let widthTolerance = true;
         let heightTolerance = true;
 
+        // ── Unit system ─────────────────────────────────────────────────────────
+        let currentUnit = 'mm';   // 'mm' | 'in'
+        const MM_PER_IN = 25.4;
+
+        function toMM(val) {
+            return currentUnit === 'in' ? val * MM_PER_IN : val;
+        }
+
+        function fromMM(val) {
+            return currentUnit === 'in' ? val / MM_PER_IN : val;
+        }
+
+        function unitLabel() {
+            return currentUnit === 'in' ? 'in' : 'mm';
+        }
+
+        function setUnit(unit) {
+            if (unit === currentUnit) return;
+
+            // Convert all current input values to the new unit
+            const fieldIds = ['paperWidth', 'paperHeight', 'rectWidth', 'rectHeight',
+                              'widthToleranceValue', 'heightToleranceValue'];
+
+            fieldIds.forEach(id => {
+                const el = document.getElementById(id);
+                const val = parseFloat(el.value);
+                if (!isNaN(val)) {
+                    const inMM = unit === 'in' ? val : val * MM_PER_IN;  // current value → mm
+                    const newVal = unit === 'in' ? inMM / MM_PER_IN      // mm → in
+                                               : inMM;                    // stay mm
+                    // If switching FROM mm TO in: val is in mm
+                    // If switching FROM in TO mm: val is in in
+                    const converted = unit === 'in'
+                        ? (currentUnit === 'mm' ? val / MM_PER_IN : val)
+                        : (currentUnit === 'in' ? val * MM_PER_IN : val);
+                    el.value = parseFloat(converted.toFixed(unit === 'in' ? 4 : 2));
+                }
+            });
+
+            currentUnit = unit;
+
+            // Update pill buttons
+            document.getElementById('unitMM').classList.toggle('active', unit === 'mm');
+            document.getElementById('unitIN').classList.toggle('active', unit === 'in');
+
+            // Update all unit labels
+            const u = unitLabel();
+            document.getElementById('paperDimTitle').textContent  = `Paper Dimensions (${u})`;
+            document.getElementById('rectDimTitle').textContent   = `Rectangle Dimensions (${u})`;
+            document.getElementById('labelPaperWidth').textContent  = `Paper Width (${u})`;
+            document.getElementById('labelPaperHeight').textContent = `Paper Height (${u})`;
+            document.getElementById('labelRectWidth').textContent   = `Rectangle Width (${u})`;
+            document.getElementById('labelRectHeight').textContent  = `Rectangle Height (${u})`;
+            document.getElementById('labelWidthMargin').textContent  = `Width Margin (${u})`;
+            document.getElementById('labelHeightMargin').textContent = `Height Margin (${u})`;
+
+            // Adjust step size
+            const dimensionStep = unit === 'in' ? '0.001' : '0.1';
+            const marginStep    = unit === 'in' ? '0.001' : '0.1';
+            ['paperWidth','paperHeight','rectWidth','rectHeight'].forEach(id => {
+                document.getElementById(id).step = dimensionStep;
+            });
+            ['widthToleranceValue','heightToleranceValue'].forEach(id => {
+                document.getElementById(id).step = marginStep;
+            });
+
+            updateResults();
+        }
+        // ────────────────────────────────────────────────────────────────────────
+
         function toggleTolerance(type) {
             if (type === 'width') {
                 widthTolerance = !widthTolerance;
@@ -443,10 +567,11 @@
         }
 
         function loadPreset(paperW, paperH, rectW, rectH) {
-            document.getElementById('paperWidth').value = paperW;
-            document.getElementById('paperHeight').value = paperH;
-            document.getElementById('rectWidth').value = rectW;
-            document.getElementById('rectHeight').value = rectH;
+            // Preset values are always in mm — convert to current unit before setting
+            document.getElementById('paperWidth').value  = parseFloat(fromMM(paperW).toFixed(currentUnit === 'in' ? 4 : 2));
+            document.getElementById('paperHeight').value = parseFloat(fromMM(paperH).toFixed(currentUnit === 'in' ? 4 : 2));
+            document.getElementById('rectWidth').value   = parseFloat(fromMM(rectW).toFixed(currentUnit === 'in' ? 4 : 2));
+            document.getElementById('rectHeight').value  = parseFloat(fromMM(rectH).toFixed(currentUnit === 'in' ? 4 : 2));
             updateResults();
         }
 
@@ -563,9 +688,16 @@
         }
 
         function calculatePlacements(paperWidth, paperHeight, rectWidth, rectHeight) {
-            const widthToleranceValue = parseFloat(document.getElementById('widthToleranceValue').value);
-            const heightToleranceValue = parseFloat(document.getElementById('heightToleranceValue').value);
+            // All values arrive in mm (already converted from current unit in updateResults)
+            const widthToleranceValue  = toMM(parseFloat(document.getElementById('widthToleranceValue').value));
+            const heightToleranceValue = toMM(parseFloat(document.getElementById('heightToleranceValue').value));
             
+            const u = unitLabel(); // 'mm' or 'in'
+            const dp = currentUnit === 'in' ? 4 : 1; // decimal places for display
+
+            // Helper to format a mm value back to display unit
+            const fmt = v => fromMM(v).toFixed(dp);
+
             // Original orientations (layouts 1 & 2)
             const cols1 = Math.floor(paperWidth / rectWidth);
             const rows1 = Math.floor(paperHeight / rectHeight);
@@ -577,7 +709,7 @@
             
             // New tolerance layouts (layouts 3 & 4)
             const toleranceH = rectHeight - heightToleranceValue;
-            const toleranceW = rectWidth - widthToleranceValue;
+            const toleranceW = rectWidth  - widthToleranceValue;
 
             // Layout 3: Same as layout 1 but with enabled tolerances applied
             const cols3 = Math.floor(paperWidth / (widthTolerance ? toleranceW : rectWidth));
@@ -593,24 +725,24 @@
                 orientation1: {
                     cols: cols1, rows: rows1, total: total1,
                     rectW: rectWidth, rectH: rectHeight,
-                    name: `${rectWidth}×${rectHeight}mm rectangles`
+                    name: `${fmt(rectWidth)}×${fmt(rectHeight)}${u} rectangles`
                 },
                 orientation2: {
                     cols: cols2, rows: rows2, total: total2,
                     rectW: rectHeight, rectH: rectWidth,
-                    name: `${rectHeight}×${rectWidth}mm rectangles (rotated)`
+                    name: `${fmt(rectHeight)}×${fmt(rectWidth)}${u} rectangles (rotated)`
                 },
                 orientation3: {
                     cols: cols3, rows: rows3, total: total3,
                     rectW: widthTolerance ? toleranceW : rectWidth, 
                     rectH: heightTolerance ? toleranceH : rectHeight,
-                    name: `Margin: ${(widthTolerance ? toleranceW : rectWidth).toFixed(1)}×${(heightTolerance ? toleranceH : rectHeight).toFixed(1)}mm`
+                    name: `Margin: ${fmt(widthTolerance ? toleranceW : rectWidth)}×${fmt(heightTolerance ? toleranceH : rectHeight)}${u}`
                 },
                 orientation4: {
                     cols: cols4, rows: rows4, total: total4,
                     rectW: heightTolerance ? toleranceH : rectHeight, 
                     rectH: widthTolerance ? toleranceW : rectWidth,
-                    name: `Margin: ${(heightTolerance ? toleranceH : rectHeight).toFixed(1)}×${(widthTolerance ? toleranceW : rectWidth).toFixed(1)}mm (rotated)`
+                    name: `Margin: ${fmt(heightTolerance ? toleranceH : rectHeight)}×${fmt(widthTolerance ? toleranceW : rectWidth)}${u} (rotated)`
                 }
             };
             
@@ -764,7 +896,7 @@
                 ctx.save();
                 ctx.translate((rightEdgeX + mainRightEdge) / 2, rightEdgeY - 30);
                 ctx.rotate(-Math.PI / 2);
-                ctx.fillText(`${mainRightDistance.toFixed(1)}`, 0, 0);
+                ctx.fillText(`${fromMM(mainRightDistance).toFixed(currentUnit === 'in' ? 4 : 1)}`, 0, 0);
                 ctx.restore();
             }
             
@@ -777,7 +909,7 @@
                     ctx.save();
                     ctx.translate((rightEdgeX + offsetX + maxRightEdge * scale) / 2, rightEdgeY + 30);
                     ctx.rotate(-Math.PI / 2);
-                    ctx.fillText(`${wasteRightDistance.toFixed(1)}`, 0, 0);
+                    ctx.fillText(`${fromMM(wasteRightDistance).toFixed(currentUnit === 'in' ? 4 : 1)}`, 0, 0);
                     ctx.restore();
                 }
             }
@@ -788,7 +920,7 @@
                 ctx.fillStyle = 'red';
                 ctx.font = '9px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText(`${mainBottomDistance.toFixed(1)}`, bottomEdgeX - 30, (bottomEdgeY + mainBottomEdge) / 2);
+                ctx.fillText(`${fromMM(mainBottomDistance).toFixed(currentUnit === 'in' ? 4 : 1)}`, bottomEdgeX - 30, (bottomEdgeY + mainBottomEdge) / 2);
             }
             
             if (maxBottomEdge > usedHeight) {
@@ -797,7 +929,7 @@
                     ctx.fillStyle = 'green';
                     ctx.font = '9px Arial';
                     ctx.textAlign = 'center';
-                    ctx.fillText(`${wasteBottomDistance.toFixed(1)}`, bottomEdgeX + 30, (bottomEdgeY + offsetY + maxBottomEdge * scale) / 2);
+                    ctx.fillText(`${fromMM(wasteBottomDistance).toFixed(currentUnit === 'in' ? 4 : 1)}`, bottomEdgeX + 30, (bottomEdgeY + offsetY + maxBottomEdge * scale) / 2);
                 }
             }
             
@@ -814,13 +946,13 @@
             // Width dimension (top edge)
             const paperWidthLabelX = offsetX + paperW / 2;
             const paperWidthLabelY = offsetY - 15;
-            ctx.fillText(`${paperWidth.toFixed(0)}mm`, paperWidthLabelX, paperWidthLabelY);
+            ctx.fillText(`${fromMM(paperWidth).toFixed(currentUnit === 'in' ? 3 : 0)}${unitLabel()}`, paperWidthLabelX, paperWidthLabelY);
 
             // Height dimension (left edge)
             ctx.save();
             ctx.translate(offsetX - 15, offsetY + paperH / 2);
             ctx.rotate(-Math.PI / 2);
-            ctx.fillText(`${paperHeight.toFixed(0)}mm`, 0, 0);
+            ctx.fillText(`${fromMM(paperHeight).toFixed(currentUnit === 'in' ? 3 : 0)}${unitLabel()}`, 0, 0);
             ctx.restore();
 
             // First rectangle dimensions (if rectangles exist)
@@ -832,13 +964,13 @@
                 const rectWidthLabelX = offsetX + firstRectW / 2;
                 const rectWidthLabelY = offsetY + firstRectH + 15;
                 ctx.fillStyle = 'red';
-                ctx.fillText(`${placement.rectW.toFixed(1)}`, rectWidthLabelX, rectWidthLabelY);
+                ctx.fillText(`${fromMM(placement.rectW).toFixed(currentUnit === 'in' ? 4 : 1)}`, rectWidthLabelX, rectWidthLabelY);
                 
                 // First rectangle height (right edge of first rectangle)
                 ctx.save();
                 ctx.translate(offsetX + firstRectW + 15, offsetY + firstRectH / 2);
                 ctx.rotate(-Math.PI / 2);
-                ctx.fillText(`${placement.rectH.toFixed(1)}`, 0, 0);
+                ctx.fillText(`${fromMM(placement.rectH).toFixed(currentUnit === 'in' ? 4 : 1)}`, 0, 0);
                 ctx.restore();
             }
 
@@ -855,23 +987,24 @@
                     // Width dimension (bottom edge of first waste rectangle)
                     const wasteWidthLabelX = startX + wasteRectW / 2;
                     const wasteWidthLabelY = startY + wasteRectH + 15;
-                    ctx.fillText(`${wasteRect.rectW.toFixed(1)}`, wasteWidthLabelX, wasteWidthLabelY);
+                    ctx.fillText(`${fromMM(wasteRect.rectW).toFixed(currentUnit === 'in' ? 4 : 1)}`, wasteWidthLabelX, wasteWidthLabelY);
                     
                     // Height dimension (right edge of first waste rectangle)
                     ctx.save();
                     ctx.translate(startX + wasteRectW + 15, startY + wasteRectH / 2);
                     ctx.rotate(-Math.PI / 2);
-                    ctx.fillText(`${wasteRect.rectH.toFixed(1)}`, 0, 0);
+                    ctx.fillText(`${fromMM(wasteRect.rectH).toFixed(currentUnit === 'in' ? 4 : 1)}`, 0, 0);
                     ctx.restore();
                 }
             });
         }
 
         function updateResults() {
-            const paperWidth = parseFloat(document.getElementById('paperWidth').value);
-            const paperHeight = parseFloat(document.getElementById('paperHeight').value);
-            const rectWidth = parseFloat(document.getElementById('rectWidth').value);
-            const rectHeight = parseFloat(document.getElementById('rectHeight').value);
+            // Always compute in mm; convert from current unit if needed
+            const paperWidth  = toMM(parseFloat(document.getElementById('paperWidth').value));
+            const paperHeight = toMM(parseFloat(document.getElementById('paperHeight').value));
+            const rectWidth   = toMM(parseFloat(document.getElementById('rectWidth').value));
+            const rectHeight  = toMM(parseFloat(document.getElementById('rectHeight').value));
             
             if (!paperWidth || !paperHeight || !rectWidth || !rectHeight) return;
             
